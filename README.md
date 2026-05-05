@@ -7,6 +7,7 @@ The project implements a BDI (Belief-Desire-Intention) agent that navigates a gr
 The agent maintains two beliefs that are continuously updated from the server:
 
 me.js — tracks the agent's own position, name, and score
+
 parcels.js — tracks all visible parcels on the map (added, updated, and removed)
 
 ### Agent Loop
@@ -19,6 +20,7 @@ The agent runs a continuous loop with three stages:
 When an intention is to be achieved, IntentionDeliberation searches the plan library for a matching plan:
 
 GoPickUp — handles go_pick_up: first navigates to the parcel, then picks it up
+
 BlindMove — handles go_to: moves the agent step by step toward a target coordinate, one axis at a time
 
 GoPickUp calls BlindMove as a sub-intention, which is how plans can be composed.
