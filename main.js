@@ -4,7 +4,7 @@ import { me, initMe } from "./beliefs/me.js";
 import { parcels, initParcels } from "./beliefs/parcels.js";
 import { deliveryTiles, initDeliveryTiles } from './beliefs/deliveryTiles.js';
 import { spawnTiles, initSpawnTiles } from "./beliefs/spawnTiles.js";
-import { IntentionRevisionReplace } from "./intentions/IntentionRevisionReplace.js";
+import { IntentionRevisionRevise } from "./intentions/IntentionRevisionRevise.js";
 import { planLibrary } from "./plans/index.js";
 import { optionsGeneration } from "./agent/optionsGeneration.js";
 
@@ -21,7 +21,7 @@ initSpawnTiles(socket);
 
 
 // agent
-const myAgent = new IntentionRevisionReplace(planLibrary);
+const myAgent = new IntentionRevisionRevise(planLibrary);
 myAgent.loop();
 
 // options

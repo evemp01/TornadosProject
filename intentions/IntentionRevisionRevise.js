@@ -1,18 +1,63 @@
-/**
- * Intention revision Revise
- */
 import { IntentionRevision } from "./IntentionRevision.js";
+import { IntentionDeliberation } from "./IntentionDeliberation.js";
+import { parcels } from "../beliefs/parcels.js";
+import { me } from "../beliefs/me.js";
+import { distance } from "../utils/distance.js";
+
 export class IntentionRevisionRevise extends IntentionRevision {
 
-    /**
-     * @param { [string, ...any] } predicate is in the form ['go_to', x, y]
-     */
-    async push ( predicate ) {
-        console.log( 'Revising intention queue. Received', ...predicate );
-        // TODO
-        // - order intentions based on utility function (reward - cost) (for example, parcel score minus distance)
-        // - eventually stop current one
-        // - evaluate validity of intention
+    constructor(planLibrary) {
+        super();
+        this.planLibrary = planLibrary;
     }
 
+    utility(predicate) {
+        const [action, x, y, id] = predicate;
+
+        if (action === 'go_deliver') return 1000;
+
+        if (action === 'go_pick_up') {
+            const parcel = parcels.get(id);
+            if (!parcel || parcel.carriedBy) return -1;
+            const d = distance({ x, y }, me);
+            return 100 - d;
+        }
+
+        if (action === 'go_spawn') return 1;
+        if (action === 'go_random') return 0;
+
+        return -1;
+    }
+
+    async push(predicate) {
+        console.log('Revising intention queue. Received', ...predicate);
+
+        // Remove invalid intentions (parcels already taken)
+        for (const i of this.intention_queue) {
+            if (i.predicate[0] === 'go_pick_up') {
+                const parcel = parcels.get(i.predicate[3]);
+                if (!parcel || parcel.carriedBy) {
+                    i.stop();
+                }
+            }
+        }
+
+        // Check if already queued
+        if (this.intention_queue.find(i => i.predicate.join(' ') === predicate.join(' ')))
+            return;
+
+        // Add new intention
+        const intention = new IntentionDeliberation(this, predicate, this.planLibrary);
+        this.intention_queue.push(intention);
+
+        // Sort by utility
+        this.intention_queue.sort((a, b) => this.utility(b.predicate) - this.utility(a.predicate));
+
+        // If the new intention is now the best, stop current one
+        const best = this.intention_queue[0];
+        if (best.predicate.join(' ') === predicate.join(' ')) {
+            if (this.intention_queue[1])
+                this.intention_queue[1].stop();
+        }
+    }
 }
