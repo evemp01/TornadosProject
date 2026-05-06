@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { DjsConnect } from "@unitn-asa/deliveroo-js-sdk/client";
 import { me, initMe } from "./beliefs/me.js";
 import { parcels, initParcels } from "./beliefs/parcels.js";
+import { deliveryTiles, initDeliveryTiles } from './beliefs/deliveryTiles.js';
 import { IntentionRevisionReplace } from "./intentions/IntentionRevisionReplace.js";
 import { planLibrary } from "./plans/index.js";
 import { optionsGeneration } from "./agent/optionsGeneration.js";
@@ -14,6 +15,8 @@ export const socket = DjsConnect(
 // beliefs
 initMe(socket);
 initParcels(socket);
+initDeliveryTiles(socket);
+
 
 // agent
 const myAgent = new IntentionRevisionReplace(planLibrary);

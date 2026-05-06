@@ -41,4 +41,12 @@ export function optionsGeneration (myAgent) {
     if ( best_option )
         myAgent.push( best_option )
 
+    /**
+     * Delivery option
+     * If agent is carrying any parcel, push go_deliver
+     */
+    const carrying = Array.from(parcels.values()).filter(p => p.carriedBy === me.id);
+    if (carrying.length > 0)
+        myAgent.push(['go_deliver']);
+
 }
