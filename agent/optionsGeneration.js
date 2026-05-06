@@ -1,6 +1,7 @@
 import { parcels } from "../beliefs/parcels.js";
 import { me } from "../beliefs/me.js";
 import { distance } from "../utils/distance.js";
+import { deliveryTiles } from "../beliefs/deliveryTiles.js";
 
 export function optionsGeneration(myAgent) {
 
@@ -9,9 +10,13 @@ export function optionsGeneration(myAgent) {
      */
     const carrying = Array.from(parcels.values()).filter(p => p.carriedBy === me.id);
     if (carrying.length > 0) {
-        myAgent.push(['go_deliver']);
+        const deliveryVisible = deliveryTiles.length > 0;
+        if (deliveryVisible)
+            myAgent.push(['go_deliver']);
+        else
+            myAgent.push(['go_random']); // can't see delivery tile, walk around
         return;
-    }
+}
 
     /**
      * Options generation
@@ -42,4 +47,6 @@ export function optionsGeneration(myAgent) {
      */
     if (best_option)
         myAgent.push(best_option);
+    else
+        myAgent.push(['go_random']);
 }
