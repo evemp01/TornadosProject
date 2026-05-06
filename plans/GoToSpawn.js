@@ -1,0 +1,29 @@
+import { PlanBase } from "./PlanBase.js";
+import { me } from "../beliefs/me.js";
+import { spawnTiles } from "../beliefs/spawnTiles.js";
+import { distance } from "../utils/distance.js";
+
+export class GoToSpawn extends PlanBase {
+
+    static isApplicableTo(go_spawn) {
+        return go_spawn === 'go_spawn';
+    }
+
+    async execute(go_spawn) {
+        // Find nearest spawn tile
+        let nearest = Number.MAX_VALUE;
+        let target;
+        for (const tile of spawnTiles) {
+            const d = distance(tile, me);
+            if (d < nearest) {
+                nearest = d;
+                target = tile;
+            }
+        }
+
+        if (!target) throw ['no spawn tile found'];
+
+        await this.subIntention(['go_to', target.x, target.y]);
+        return true;
+    }
+}

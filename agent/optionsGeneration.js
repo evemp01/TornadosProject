@@ -2,6 +2,7 @@ import { parcels } from "../beliefs/parcels.js";
 import { me } from "../beliefs/me.js";
 import { distance } from "../utils/distance.js";
 import { deliveryTiles } from "../beliefs/deliveryTiles.js";
+import { spawnTiles } from "../beliefs/spawnTiles.js";
 
 export function optionsGeneration(myAgent) {
 
@@ -47,6 +48,8 @@ export function optionsGeneration(myAgent) {
      */
     if (best_option)
         myAgent.push(best_option);
+    else if (spawnTiles.length > 0)
+        myAgent.push(['go_spawn']);
     else
         myAgent.push(['go_random']);
 }
