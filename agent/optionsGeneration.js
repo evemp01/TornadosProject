@@ -18,6 +18,5 @@ export function optionsGeneration(myAgent) {
     // Pusha fallbacks
     if (spawnTiles.length > 0)
         myAgent.push(['go_spawn']);
-    
-    myAgent.push(['go_random']);
+
 }
