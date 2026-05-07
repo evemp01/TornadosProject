@@ -1,6 +1,6 @@
 import { PlanBase } from "./PlanBase.js";
 import { me } from "../beliefs/me.js";
-import { spawnTiles } from "../beliefs/spawnTiles.js";
+import { spawnTiles } from "../beliefs/map.js";
 import { distance } from "../utils/distance.js";
 
 export class GoToSpawn extends PlanBase {

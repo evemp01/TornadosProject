@@ -1,6 +1,6 @@
 import { PlanBase } from "./PlanBase.js";
 import { me } from "../beliefs/me.js";
-import { deliveryTiles } from "../beliefs/deliveryTiles.js";
+import { deliveryTiles } from "../beliefs/map.js";
 import { distance } from "../utils/distance.js";
 import { socket } from "../main.js";
 

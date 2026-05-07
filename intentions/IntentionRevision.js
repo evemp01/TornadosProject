@@ -26,8 +26,9 @@ export class IntentionRevision {
                 let id = intention.predicate[2]
                 let p = parcels.get(id)
                 if ( p && p.carriedBy ) {
-                    console.log( 'Skipping intention because no more valid', intention.predicate )
-                    continue;
+                    console.log( 'Skipping intention because no more valid', intention.predicate );
+                    this.intention_queue.shift(); // Ta bort den ogiltiga intentionen
+                    continue; 
                 }
 
                 // Start achieving intention

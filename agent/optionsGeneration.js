@@ -1,8 +1,7 @@
 import { parcels } from "../beliefs/parcels.js";
 import { me } from "../beliefs/me.js";
 import { distance } from "../utils/distance.js";
-import { deliveryTiles } from "../beliefs/deliveryTiles.js";
-import { spawnTiles } from "../beliefs/spawnTiles.js";
+import { deliveryTiles, spawnTiles } from "../beliefs/map.js";
 
 export function optionsGeneration(myAgent) {
 
