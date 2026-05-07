@@ -1,4 +1,5 @@
 import { isWalkable } from '../beliefs/map.js';
+import { distance } from './distance.js';
 
 export function astar(start, goal) {
   const openList = [];
@@ -8,7 +9,7 @@ export function astar(start, goal) {
 
   while (openList.length > 0) {
     // Pick node with lowest f = g + h
-    openList.sort((a, b) => (a.g + heuristic(a, goal)) - (b.g + heuristic(b, goal)));
+    openList.sort((a, b) => (a.g + distance(a, goal)) - (b.g + distance(b, goal)));
     const current = openList.shift();
     const key = `${current.x},${current.y}`;
 
