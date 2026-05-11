@@ -3,6 +3,7 @@ import { IntentionDeliberation } from "./IntentionDeliberation.js";
 import { parcels } from "../beliefs/parcels.js";
 import { me } from "../beliefs/me.js";
 import { distance } from "../utils/distance.js";
+import { deliveryTiles } from "../beliefs/map.js";
 
 export class IntentionRevisionRevise extends IntentionRevision {
 
@@ -14,13 +15,22 @@ export class IntentionRevisionRevise extends IntentionRevision {
     utility(predicate) {
         const [action, x, y, id] = predicate;
 
-        if (action === 'go_deliver') return 1000;
+        if (action === 'go_deliver') {
+            const carrying = Array.from(parcels.values()).filter(p => p.carriedBy === me.id);
+            if (carrying.length === 0) return -1; // nothing to deliver
+
+            const totalReward = carrying.reduce((sum, p) => sum + p.reward, 0);
+            const nearestDelivery = Math.min(...deliveryTiles.map(t => distance(t, me)));
+
+            // Deliver score grows with reward and shrinks with distance
+            return totalReward - nearestDelivery;
+        }
 
         if (action === 'go_pick_up') {
             const parcel = parcels.get(id);
             if (!parcel || parcel.carriedBy) return -1;
             const d = distance({ x, y }, me);
-            return 100 - d;
+            return parcel.reward - d; // use actual reward, not flat 100
         }
 
         if (action === 'go_spawn') return 1;
