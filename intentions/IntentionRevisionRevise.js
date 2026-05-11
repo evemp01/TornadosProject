@@ -15,6 +15,9 @@ export class IntentionRevisionRevise extends IntentionRevision {
     utility(predicate) {
         const [action, x, y, id] = predicate;
 
+        // If she is carrying parcels worth 45 points and the nearest delivery is 5 steps away, deliver utility = 40. 
+        // If a nearby parcel has reward - distance = 8 - 2 = 6, delivering wins. 
+        // But if there's a parcel with reward - distance = 30 - 3 = 27, picking it up first wins instead.
         if (action === 'go_deliver') {
             const carrying = Array.from(parcels.values()).filter(p => p.carriedBy === me.id);
             if (carrying.length === 0) return -1; // nothing to deliver
