@@ -27,13 +27,13 @@ export function initMap(socket) {
 
 export function isWalkable(x, y) {
     const type = grid.get(`${x},${y}`);
-    return type === 1 || type === 2 || type === 3;
+    return type == 1 || type == 2 || type == 3;
 }
 
 export function isDelivery(x, y) {
-    return grid.get(`${x},${y}`) === 2;
+    return grid.get(`${x},${y}`) == 2;
 }
 
 export function isSpawn(x, y) {
-    return grid.get(`${x},${y}`) === 1;
+    return grid.get(`${x},${y}`) == 1;
 }
