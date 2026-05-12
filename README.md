@@ -24,3 +24,18 @@ GoPickUp — handles go_pick_up: first navigates to the parcel, then picks it up
 BlindMove — handles go_to: moves the agent step by step toward a target coordinate, one axis at a time
 
 GoPickUp calls BlindMove as a sub-intention, which is how plans can be composed.
+
+### Todoo
+Project part 1:
+
+1. Agent sensing: Avoiding other agent. Don`t aim for pacrels cloce to other agent
+
+2. Avoid packages with low number.
+
+3. Avoiding crates. Moove crates. Use PDDL
+
+4. Sense one way tiles. 
+
+Project part 2:
+
+1. Make LLM agent
