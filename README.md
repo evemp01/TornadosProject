@@ -55,8 +55,9 @@ Could be done with only the BDI agent, but the special llm missions can give a l
 
 They will send the missions from a "missionAgent", they will provide the name of it, so our agent should only take instructions from that agent, and not misleading fake missions from other agents.
 
-Try the challanges in the slides:
-### Atomic special missions - Only LLM needed
+### Try the challanges in the slides
+
+#### Level 1: Atomic special missions - Only LLM needed
 Can be solved by the code that you can find in the github.
 New prompts all the time, ex every 30sek, and you have to decide which ones to follow.
 The mission can for example be recived at the 47sek and you can do it whenever during the match.
@@ -66,7 +67,7 @@ Examples:
 - Answer simple questions like "What is the capital of Italy?"
 - Drop a package in the leftmost tile to get 5pts
 
-### Intermediate special missions - LLM and BDI is both needed
+#### Level 2: Intermediate special missions - LLM and BDI is both needed
 Permanent during the challange and can be solved more times during the challange to earn more points.
 The challanges in the slides will be used, but the phrasing could will be changed.
 BDI for path finding, LLM should tune the BDI strategy.
@@ -77,7 +78,7 @@ Examples:
 - Deliver stacks of exactly 3 parcels at a time to double the reward
 - Every time you deliver in (x1,y1) or (x2,y2)...
 
-### Mission requiring coordination or communication
+#### Level 3: Mission requiring coordination or communication
 Require multi-agent coordination and communication tools, between our two agents.
 Examples:
 - Move both agents to the neighborhood of position (x,y) whitin a maximum distance of 3, and have them to wait for each other. You will recive 500pts
