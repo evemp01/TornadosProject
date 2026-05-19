@@ -24,3 +24,47 @@ GoPickUp — handles go_pick_up: first navigates to the parcel, then picks it up
 BlindMove — handles go_to: moves the agent step by step toward a target coordinate, one axis at a time
 
 GoPickUp calls BlindMove as a sub-intention, which is how plans can be composed.
+
+## Second Challange - Notes
+We will have 2 agents:
+- BDI Agent from first challange, pick up and deliver packages
+- llm-based agent, with BDI aswell
+
+Could be done with only the BDI agent, but the special llm missions can give a lot of more or less points.
+
+They will send the missions from a "missionAgent", they will provide the name of it, so our agent should only take instructions from that agent, and not misleading fake missions from other agents.
+
+Try the challanges in the slides:
+#### Atomic special missions - Only LLM needed
+Can be solved by the code that you can find in the github.
+New prompts all the time, ex every 30sek, and you have to decide which ones to follow.
+The mission can for example be recived at the 47sek and you can do it whenever during the match.
+Examples:
+- Go to coord (4,7) and you get +10pts
+- Move to x=4*2 y=(1+3)*3 to get -10pts
+- Answer simple questions like "What is the capital of Italy?"
+- Drop a package in the leftmost tile to get 5pts
+
+#### Intermediate special missions - LLM and BDI is both needed
+Permanent during the challange and can be solved more times during the challange to earn more points.
+The challanges in the slides will be used, maybe the phrasing will be changed.
+BDI for path finding, LLM should tune the BDI strategy.
+ex. you need to implement a removeDeliveryTile() and the LLM should use it, when its needed, so more tools will have to be added.
+
+Examples:
+- Deliver stacks of exactly 5 parcels at a time to get 0.3 of the standard reward
+- Deliver stacks of exactly 3 parcels at a time to double the reward
+- Every time you deliver in (x1,y1) or (x2,y2)...
+
+#### Mission requiring coordination or communication
+Require multi-agent coordination and communication tools.
+Examples:
+- Move both agents to the neighborhood of position (x,y) whitin a maximum distance of 3, and have them to wait for each other. You will recive 500pts
+  - Implement a tool stop() and move()
+- If a parcel is picked up by one agent and deliver by another you recive 200pts
+
+### Next lessons:
+- 20/5 Exam presentation
+- 26/5 Support for second challange
+- 27/5 Last day for the form to the second challange
+- 3/6  Second challange
