@@ -7,21 +7,21 @@ export let mapWidth = 0;
 export let mapHeight = 0;
 
 export function initMap(socket) {
-    console.log('initMap called, registering onMap listener');
+    //console.log('initMap called, registering onMap listener');
     socket.onMap((width, height, tiles) => {
         mapWidth = width;
         mapHeight = height;
-        console.log('onMap fired! tiles:', tiles.length);
+        //console.log('onMap fired! tiles:', tiles.length);
 
         for (const tile of tiles) {
             grid.set(`${tile.x},${tile.y}`, tile.type);
-            console.log(tile.type);
+            //console.log(tile.type);
             if (tile.type == 0) blackTiles.push(tile);
             if (tile.type == 1) spawnTiles.push(tile);
             if (tile.type == 2) deliveryTiles.push(tile);
             if (tile.type == 3) whiteTiles.push(tile);
         }
-        console.log('Map initialized. Delivery tiles:', deliveryTiles.length, 'Spawn tiles:', spawnTiles.length, 'White tiles:', whiteTiles.length);
+        //console.log('Map initialized. Delivery tiles:', deliveryTiles.length, 'Spawn tiles:', spawnTiles.length, 'White tiles:', whiteTiles.length);
     });
 }
 

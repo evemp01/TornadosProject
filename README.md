@@ -68,3 +68,18 @@ Examples:
 - 26/5 Support for second challange
 - 27/5 Last day for the form to the second challange
 - 3/6  Second challange
+
+### Todoo
+Project part 1:
+
+1. Agent sensing: Avoiding other agent. Don`t aim for pacrels cloce to other agent
+
+2. Avoid packages with low number.
+
+3. Avoiding crates. Moove crates. Use PDDL
+
+4. Sense one way tiles. 
+
+Project part 2:
+
+1. Make LLM agent
