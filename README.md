@@ -84,3 +84,52 @@ Examples:
 - Move both agents to the neighborhood of position (x,y) whitin a maximum distance of 3, and have them to wait for each other. You will recive 500pts
   - Implement a tool stop() and move()
 - If a parcel is picked up by one agent and deliver by another you recive 200pts
+
+
+### Repport
+- max 10 pages 
+- free format
+- can 
+- use challenge 1 and 2 to validate the code
+
+requirements BDI agent.
+- snese envirement
+- revise believes
+-
+
+requirements LLM
+- LLM understand a message in text format: exs agent B has to collect paccage and agent A ahs to deliver
+- 
+
+PPDL:
+- basiccaly use it for what you want
+- exs: BDI agent move packages
+- inportant for evaluation
+
+
+Dedline:
+- 17. of june = dedline to send the form with the repport (and code?)
+- remember to register in moodle first!!!!!!!!!!!!!!!
+
+Exam/presentation: 
+Will recieve an email about time - sometime 22. or 23. of june
+- 10 minutes presentation 
+- 20 min of Q& - show the code and
+
+Evaluation:
+- BDI = 30% of grade
+- LLM and coordination = 30%
+- PDDL = 20%
+- presentation + repport = 20%
+obs: if this exists it is the 
+EXS: utilityfuncion for knowing what to adapt or so
+exs: how effischant the agent is
+
+- next tuesday: pretest for the challange
+- challage 3. of june = last day of lectures
+- regirster for the challenge befor 27.?
+
+other talkens, if you run out of context:
+- lama
+- quen
+- 
