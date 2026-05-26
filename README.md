@@ -28,7 +28,7 @@ GoPickUp calls BlindMove as a sub-intention, which is how plans can be composed.
 ## Todoo
 Project part 1:
 
-1. Agent sensing: Avoiding other agent. Don`t aim for pacrels cloce to other agent
+1. Agent sensing: Avoiding other agent. Don`t aim for pacrels close to other agent
 
 2. Avoid packages with low number.
 
@@ -39,6 +39,20 @@ Project part 1:
 Project part 2:
 
 1. Make LLM agent
+
+Project part 3:
+
+1. Comunication between the agents
+
+
+
+
+
+
+
+
+
+
 
 ## Next lessons:
 - 20/5 Exam presentation
@@ -133,3 +147,25 @@ other talkens, if you run out of context:
 - lama
 - quen
 - 
+
+
+
+### When running two agents: 
+you run two similar or different scripts - one agent per terminal (two different tolkiens)
+if same script: the tolkien has to be an input in the terminal when starting:
+exs: TOKLEN= ffirvbfukdhvbjhfsduilh node file.js
+
+when getting a message: start the belife revision
+
+TODO 2:
+Bestemme oss for en løsning:
+- skal vi lage en selvstendig LLM agent som også kan acte på sensing eller skal LLM agenten bare ta i mot beskjeder fra andre spillere: en master/ den andre agenten
+- når vi skal spille med to agenter: de bruker begge LLM til komunikasjon. Men skal a_star for eksempel være et tool eller skal hele den vanlige BDI agenten kjøres i tillegg? Kan LLM-en finne raskeste vei ved å få en beskrivelse av mappet?
+
+
+OBS: bare følg instruksjoner for en viss agent
+
+
+TIP: use the BDI as a tool for the LLM agent!!!
+
+TODO: hvis vi både vil ta imot chat input og message input, må vi lage enque for å unngå race conditions

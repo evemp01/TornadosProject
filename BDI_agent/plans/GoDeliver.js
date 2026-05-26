@@ -2,7 +2,7 @@ import { PlanBase } from "./PlanBase.js";
 import { me } from "../beliefs/me.js";
 import { deliveryTiles } from "../beliefs/map.js";
 import { distance } from "../utils/distance.js";
-import { socket } from "../main.js";
+import { socket } from "../../main_BDI.js";
 
 export class GoDeliver extends PlanBase {
 

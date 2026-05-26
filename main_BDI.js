@@ -1,11 +1,11 @@
 import 'dotenv/config';
 import { DjsConnect } from "@unitn-asa/deliveroo-js-sdk/client";
-import { me, initMe } from "./beliefs/me.js";
-import { parcels, initParcels } from "./beliefs/parcels.js";
-import { initMap, deliveryTiles, spawnTiles, whiteTiles } from './beliefs/map.js';
-import { IntentionRevisionRevise } from "./intentions/IntentionRevisionRevise.js";
-import { planLibrary } from "./plans/index.js";
-import { optionsGeneration } from "./agent/optionsGeneration.js";
+import { me, initMe } from "./BDI_agent/beliefs/me.js";
+import { parcels, initParcels } from "./BDI_agent/beliefs/parcels.js";
+import { initMap, deliveryTiles, spawnTiles, whiteTiles } from "./BDI_agent/beliefs/map.js";
+import { IntentionRevisionRevise } from "./BDI_agent/intentions/IntentionRevisionRevise.js";
+import { planLibrary } from "./BDI_agent/plans/index.js";
+import { optionsGeneration } from "./BDI_agent/agent/optionsGeneration.js";
 
 export const socket = DjsConnect(
     process.env.HOST,

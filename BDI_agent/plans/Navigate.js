@@ -1,6 +1,6 @@
 import { PlanBase } from "./PlanBase.js";
 import { me } from "../beliefs/me.js";
-import { socket } from "../main.js";
+import { socket } from "../../main_BDI.js";
 import { astar } from "../utils/astar.js";
 
 export class Navigate extends PlanBase {
