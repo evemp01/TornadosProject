@@ -4,6 +4,7 @@ import { parcels } from "../beliefs/parcels.js";
 import { me } from "../beliefs/me.js";
 import { distance } from "../utils/distance.js";
 import { deliveryTiles } from "../beliefs/map.js";
+import { agents } from "../beliefs/agents.js";
 
 export class IntentionRevisionRevise extends IntentionRevision {
 
@@ -37,7 +38,6 @@ export class IntentionRevisionRevise extends IntentionRevision {
         }
 
         if (action === 'go_spawn') return 1;
-        if (action === 'go_random') return 0;
 
         return -1;
     }
