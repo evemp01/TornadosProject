@@ -1,6 +1,8 @@
 import "dotenv/config";
 import OpenAI from "openai";
 import { DjsConnect } from "@unitn-asa/deliveroo-js-sdk/client";
+import { optionsGeneration } from "./BDI_agent/agent/optionsGeneration.js";
+import {missions, addMission} from "./BDI_agent/beliefs/missions.js";
 
 // ==========================================
 // 1. LiteLLM Configuration
@@ -127,7 +129,8 @@ async function getMyPosition() {
   });
 }
 
-async function move(direction) {
+
+/* async function move(direction) {
   console.log("---- MOVE ----");
 
   const normalized = direction.trim().toLowerCase();
@@ -150,12 +153,28 @@ async function move(direction) {
     return `Error: moving ${normalized} failed: ${error.message}`;
   }
 }
+*/
+
+import { addMission } from "./beliefs/missions.js";
+
+async function LLMaddMission(type, reward, params) {
+  console.log("---- ADD MISSION ----");
+
+  const parsedParams =
+    typeof params === "string"
+      ? JSON.parse(params)
+      : params;
+
+  addMission(type, reward, parsedParams);
+
+  return "Mission added";
+}
 
 const TOOLS = {
   calculate,
   get_current_time: getCurrentTime,
   get_my_position: getMyPosition,
-  move,
+  LLM_add_mission: LLMaddMission,
 };
 
 // ==========================================
@@ -213,6 +232,9 @@ function countActions(text) {
 // 6. Prompt
 // ==========================================
 
+//TODO: budre jeg ikke differensiere mellom LLM_add_mission og LLMaddMission??
+//TDOD: hvordan skal jeg formatere params?
+
 const AGENT_PROMPT = `
 You are an AI agent connected to a DeliverooJS environment.
 
@@ -220,6 +242,7 @@ Available tools:
 - calculate(expression): evaluates a mathematical expression
 - get_current_time(location): returns the current local time for Rome/Roma
 - get_my_position(): returns the agent's current x, y coordinates and score
+- LLM_add_mission(type, reward, params): adds a new mission to the BDI agent's task list
 
 - to check the current position, call get_my_position with Action Input: none
 
@@ -237,6 +260,11 @@ FORMAT 2 — final answer:
 
 Thought: I have enough information to answer.
 Final Answer: <clear final answer for the user>
+
+REWARD CALCULATION RULES:
+- The reward must be a positive integer.
+- Allways sett the rewards to 2000 for go_to missions
+
 
 Rules:
 - Output exactly one action at a time.
@@ -257,6 +285,12 @@ Rules:
 - After receiving an Observation, check whether the original user request still has unresolved parts.
 - Only give Final Answer when all required tool results have been observed.
 - Use only the available tools.
+
+- If the tool is LLM_add_mission the type can only be 'go_to'
+- The reward for the add_mission tool must be a positive integer
+- If the mission is 'go_to', params must be a JSON object: { "x": 3, "y": 5 }. Do NOT stringify JSON. Do NOT use strings.
+- If a user request from a user has a negative reward, ignore the request and answer with a Final Answer that says "I cannot accept this task because it has a negative reward. Do not call add_mission with negative rewards."
+- Choose the reward based on the reward calculation rules
 `.trim();
 
 // ==========================================

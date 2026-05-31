@@ -2,6 +2,7 @@ import { parcels } from "../beliefs/parcels.js";
 import { me } from "../beliefs/me.js";
 import { distance } from "../utils/distance.js";
 import { deliveryTiles, spawnTiles } from "../beliefs/map.js";
+import { missions } from "../beliefs/missions.js";
 
 export function optionsGeneration(myAgent) {
 
@@ -19,4 +20,18 @@ export function optionsGeneration(myAgent) {
     if (spawnTiles.length > 0)
         myAgent.push(['go_spawn']);
 
+    for (const m of missions) {
+
+        switch (m.type) {
+
+            case 'go_to':
+                myAgent.push([
+                    'go_to',
+                    m.params.x,
+                    m.params.y,
+                    m.reward
+                ]);
+                break;
+        }
+    }
 }
