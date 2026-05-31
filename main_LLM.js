@@ -220,15 +220,7 @@ Available tools:
 - calculate(expression): evaluates a mathematical expression
 - get_current_time(location): returns the current local time for Rome/Roma
 - get_my_position(): returns the agent's current x, y coordinates and score
-- move(direction): moves the agent one step in one direction: up, down, left, or right
 
-Movement rules:
-- move(up) increases y by 1
-- move(down) decreases y by 1
-- move(right) increases x by 1
-- move(left) decreases x by 1
-- move can move only one step at a time
-- if the user asks to move multiple steps, call move once for each step
 - to check the current position, call get_my_position with Action Input: none
 
 You solve the user's request step by step.
@@ -259,7 +251,7 @@ Rules:
 - If the user asks for arithmetic, call calculate before answering.
 - If the user asks for the current time in Rome/Roma, call get_current_time before answering.
 - If the user asks where the agent is, call get_my_position before answering.
-- If the user asks to move, call move once for each movement step.
+- If the user asks to move, call BDIagentMove(x,y).
 - If the user asks for the final position after moving, call get_my_position after the movements.
 - If the user asks for multiple things, solve one thing at a time.
 - After receiving an Observation, check whether the original user request still has unresolved parts.
