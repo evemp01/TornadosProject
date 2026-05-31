@@ -4,6 +4,7 @@ import { parcels } from "../beliefs/parcels.js";
 import { me } from "../beliefs/me.js";
 import { distance } from "../utils/distance.js";
 import { deliveryTiles } from "../beliefs/map.js";
+import { agents } from "../beliefs/agents.js";
 
 export class IntentionRevisionRevise extends IntentionRevision {
 
@@ -36,8 +37,8 @@ export class IntentionRevisionRevise extends IntentionRevision {
             return parcel.reward - d; // use actual reward, not flat 100
         }
 
+        // If no parcels are spawning at the spawn tile, then the agent should try a new one after a while
         if (action === 'go_spawn') return 1;
-        if (action === 'go_random') return 0;
 
         return -1;
     }

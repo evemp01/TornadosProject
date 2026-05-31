@@ -3,6 +3,7 @@ export const deliveryTiles = [];
 export const spawnTiles = [];
 export const blackTiles = [];
 export const whiteTiles = [];
+export const directionalTiles = new Map(); // key: `${x},${y}` → direction
 export let mapWidth = 0;
 export let mapHeight = 0;
 
@@ -20,14 +21,17 @@ export function initMap(socket) {
             if (tile.type == 1) spawnTiles.push(tile);
             if (tile.type == 2) deliveryTiles.push(tile);
             if (tile.type == 3) whiteTiles.push(tile);
+            if (tile.type === '→' || tile.type === '←' || tile.type === '↑' || tile.type === '↓') {
+                directionalTiles.set(`${tile.x},${tile.y}`, tile.type);
+                grid.set(`${tile.x},${tile.y}`, 'directional');
+            } 
         }
-        //console.log('Map initialized. Delivery tiles:', deliveryTiles.length, 'Spawn tiles:', spawnTiles.length, 'White tiles:', whiteTiles.length);
     });
 }
 
 export function isWalkable(x, y) {
     const type = grid.get(`${x},${y}`);
-    return type == 1 || type == 2 || type == 3;
+    return type == 1 || type == 2 || type == 3 || type === 'directional';
 }
 
 export function isDelivery(x, y) {
@@ -36,4 +40,8 @@ export function isDelivery(x, y) {
 
 export function isSpawn(x, y) {
     return grid.get(`${x},${y}`) == 1;
+}
+
+export function getDirection(x, y) {
+    return directionalTiles.get(`${x},${y}`) || null;
 }
