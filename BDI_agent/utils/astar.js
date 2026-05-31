@@ -1,4 +1,4 @@
-import { isWalkable } from '../beliefs/map.js';
+import { isWalkable, getDirection } from '../beliefs/map.js';
 import { agents } from '../beliefs/agents.js';
 import { me } from '../beliefs/me.js'; 
 import { distance } from './distance.js';
@@ -46,6 +46,17 @@ export function astar(start, goal) {
     ];
 
     for (const n of neighbours) {
+      // If current tile is directional, only allow the specified direction
+      const forcedDirection = getDirection(current.x, current.y);
+      if (forcedDirection) {
+          const allowed = {
+              '→': current.x + 1 == n.x && current.y == n.y,
+              '←':  current.x - 1 == n.x && current.y == n.y,
+              '↑':    current.y + 1 == n.y && current.x == n.x,
+              '↓':  current.y - 1 == n.y && current.x == n.x,
+          };
+          if (!allowed[forcedDirection]) continue; // skip this neighbour
+      }
       if (!visited.has(`${n.x},${n.y}`) && isWalkable(n.x, n.y) && !agentPositions.has(`${n.x},${n.y}`)) {
         openList.push({ ...n, g: current.g + 1, parent: current });
       }
