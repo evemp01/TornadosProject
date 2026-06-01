@@ -1,5 +1,3 @@
-// Translate the belifes to pddl, so that we can use them in the planner. We will have to make a new belief for each type of object, and then update them with the sensing data.
-
 export const parcels = new Map();
 
 export function initParcels(socket) {
