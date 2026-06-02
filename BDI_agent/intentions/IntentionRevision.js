@@ -17,7 +17,7 @@ export class IntentionRevision {
         while ( true ) {
             // Consumes intention_queue if not empty
             if ( this.intention_queue.length > 0 ) {
-                console.log( 'intentionRevision.loop', this.intention_queue.map(i=>i.predicate) );
+                //console.log( 'intentionRevision.loop', this.intention_queue.map(i=>i.predicate) );
             
                 // Current intention
                 const intention = this.intention_queue[0];
@@ -27,7 +27,7 @@ export class IntentionRevision {
                 let id = intention.predicate[3]
                 let p = parcels.get(id)
                 if ( p && p.carriedBy ) {
-                    console.log( 'Skipping intention because no more valid', intention.predicate );
+                    //console.log( 'Skipping intention because no more valid', intention.predicate );
                     this.intention_queue.shift(); // Ta bort den ogiltiga intentionen
                     continue; 
                 }
@@ -51,7 +51,7 @@ export class IntentionRevision {
 
     /** @type { function(...any): void } */
     log ( ...args ) {
-        console.log( ...args )
+        //console.log( ...args )
     }
 
     /**

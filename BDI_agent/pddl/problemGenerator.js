@@ -93,11 +93,11 @@ export async function planCrateMovement(goalPos) {
 
     // 9. Skicka till solver och returnera sekvensen av actions
     try {
-        console.log(`[PDDL] Planning route to (${goalPos.x}, ${goalPos.y})...`);
+        //console.log(`[PDDL] Planning route to (${goalPos.x}, ${goalPos.y})...`);
         const plan = await onlineSolver(domain, problem);
         return plan; 
     } catch (error) {
-        console.error("[PDDL] Solver failed or found no solution:", error);
+        //console.error("[PDDL] Solver failed or found no solution:", error);
         return null;
     }
 }

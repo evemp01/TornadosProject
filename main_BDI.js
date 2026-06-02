@@ -8,6 +8,7 @@ import { initCrates, crates } from "./BDI_agent/beliefs/crates.js";
 import { IntentionRevisionRevise } from "./BDI_agent/intentions/IntentionRevisionRevise.js";
 import { planLibrary } from "./BDI_agent/plans/index.js";
 import { optionsGeneration } from "./BDI_agent/agent/optionsGeneration.js";
+import { llmState } from "./BDI_agent/utils/mutex.js";
 
 export const socket = DjsConnect(process.env.DELIVEROOJS_URL, process.env.DELIVEROOJS_TOKEN);
 
@@ -21,8 +22,15 @@ export function createBDI() {
     const myAgent = new IntentionRevisionRevise(planLibrary);
     myAgent.loop();
 
-    socket.onSensing(() => optionsGeneration(myAgent));
-    socket.onYou(() => optionsGeneration(myAgent));
+    socket.onSensing(() => {
+        if (llmState.busy) return;
+        optionsGeneration(myAgent);
+    });
+
+    socket.onYou(() => {
+        if (llmState.busy) return;
+        optionsGeneration(myAgent);
+    });
 
     return { socket, myAgent };
 }

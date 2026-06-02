@@ -66,6 +66,6 @@ const problem = `
     (:goal (crate-at crate1 c32))
 )`;
 
-console.log('Generating plan for grid layout...');
+//console.log('Generating plan for grid layout...');
 const plan = await onlineSolver(domain, problem);
-console.log('Plan:', plan);
+//console.log('Plan:', plan);

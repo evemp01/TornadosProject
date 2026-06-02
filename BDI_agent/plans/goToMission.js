@@ -5,13 +5,11 @@ import { astar } from "../utils/astar.js";
 
 export class GoToMission extends PlanBase {
 
-    static isApplicableTo(action, params, reward) {
+    static isApplicableTo(action, x, y, reward) {
         return action === 'go_to_mission';
     }
 
-    async execute(action, params, reward) {
-
-        const { x, y } = params;
+    async execute(action, x, y, reward) {
 
         this.log(
             `Starting mission: go to (${x}, ${y}) for reward ${reward}`

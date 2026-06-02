@@ -148,7 +148,6 @@ async function LLMaddMission(type, params, reward = 0) {
   } catch (e) {return `Error parsing mission: ${e.message}`;}
 
   addMission(mission.type, mission.params, mission.reward);
-  console.log("Parsed mission:", mission);
 
   missionAdded.emit("newMission");
 

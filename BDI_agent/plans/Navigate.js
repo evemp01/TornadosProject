@@ -18,7 +18,7 @@ export class Navigate extends PlanBase {
             { x: Math.round(me.x), y: Math.round(me.y) },
             { x: Math.round(x), y: Math.round(y) }
         );
-        console.log("PATH:", path);
+        //console.log("PATH:", path);
         // FALLBACK: If A* fails, activate the PDDL solver!
         if (!path) {
             this.log('No path found to', x, y, '- Activating PDDL multi-crate solver');

@@ -23,7 +23,7 @@ export function optionsGeneration(myAgent) {
     for (const m of missions) {
         switch (m.type) {
             case 'go_to_mission':
-                myAgent.push(['go_to_mission', m.params.x, m.params.y, m.reward ]);
+                myAgent.push(['go_to_mission', m.x, m.y, m.reward ]);
                 break;
         }
     }

@@ -10,31 +10,11 @@ import { initMe} from "./BDI_agent/beliefs/me.js";
 import { optionsGeneration } from "./BDI_agent/agent/optionsGeneration.js";
 import { missionAdded } from "./BDI_agent/utils/events.js";
 import {createBDI} from "./main_BDI.js";
+import { llmState } from "./BDI_agent/utils/mutex.js";
 
 //-----------------------------------------------------------------
 //BDI Agent Initialization
 //-----------------------------------------------------------------
-
-/*
-const socket = DjsConnect(
-    process.env.HOST,
-    process.env.TOKEN,
-);
-
-// beliefs
-initMe(socket);
-initParcels(socket);
-initMap(socket);
-initAgents(socket);
-
-// agent
-const bdiAgent = new IntentionRevisionRevise(planLibrary);
-bdiAgent.loop();
-
-// options
-socket.onSensing(() => optionsGeneration(bdiAgent));
-socket.onYou(() => optionsGeneration(bdiAgent));
-*/
 
 const { socket, myAgent: bdiAgent } = createBDI(); // Initialize BDI agent and get socket reference
 
@@ -46,4 +26,13 @@ const llmAgent = createLLMAgent();
 
 missionAdded.on("newMission", () => {optionsGeneration(bdiAgent);});
 
-socket.onMsg(async (id, name, msg) => {await llmAgent.run(msg);});
+socket.onMsg(async (id, name, msg) => {
+    if (llmState.busy) return; 
+
+    llmState.busy = true;
+    try {
+        await llmAgent.run(msg);
+    } finally {
+        llmState.busy = false;
+    }
+});

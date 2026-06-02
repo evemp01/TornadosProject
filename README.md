@@ -169,3 +169,45 @@ OBS: bare følg instruksjoner for en viss agent
 TIP: use the BDI as a tool for the LLM agent!!!
 
 TODO: hvis vi både vil ta imot chat input og message input, må vi lage enque for å unngå race conditions
+'
+
+
+
+
+TODO: make a queue instead of mutex?:
+🥉 LØSNING 3 (BEST DESIGN): event queue - dette gjør systemet deterministisk
+I stedet for å “droppe events”, gjør:
+
+const eventQueue = [];
+let processing = false;
+
+function pushEvent(event) {
+    eventQueue.push(event);
+    processQueue();
+}
+
+async function processQueue() {
+    if (processing) return;
+
+    processing = true;
+
+    while (eventQueue.length > 0) {
+        const event = eventQueue.shift();
+        await handleEvent(event);
+    }
+
+    processing = false;
+}
+
+
+TODO level 1:
+- sikre at den fortsetter å gå med BDI etter et at mission er lagt til
+- dropp final answere for LLMen
+- legge til sånn at den bare tar meldinger fra en spesifikk agent
+- mission: drop a package at leftmost tile
+
+TODO level 2:
+- LLM endrer reward / endrer map
+exs: every time deliver here you get 0 points 
+exs: everytime you go through this point you ...¨
+exs: deliver exactly 3 parcel at a time to ...

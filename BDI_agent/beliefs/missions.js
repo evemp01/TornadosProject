@@ -3,7 +3,8 @@ export const missions = [];
 export function addMission(type, params = null, reward = 0) {
     missions.push({
         type,
-        params,
+        x: params?.x || null,
+        y: params?.y || null,
         reward  
     });
 
