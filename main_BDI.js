@@ -9,34 +9,35 @@ import { IntentionRevisionRevise } from "./BDI_agent/intentions/IntentionRevisio
 import { planLibrary } from "./BDI_agent/plans/index.js";
 import { optionsGeneration } from "./BDI_agent/agent/optionsGeneration.js";
 
-export const socket = DjsConnect(
-    process.env.HOST,
-    process.env.TOKEN,
-);
+export const socket = DjsConnect(process.env.DELIVEROOJS_URL, process.env.DELIVEROOJS_TOKEN);
 
-// beliefs
-initMe(socket);
-initParcels(socket);
-initMap(socket);
-initAgents(socket);
-initCrates(socket);
+export function createBDI() {
+    initMe(socket);
+    initParcels(socket);
+    initMap(socket);
+    initAgents(socket);
+    initCrates(socket);
 
+    const myAgent = new IntentionRevisionRevise(planLibrary);
+    myAgent.loop();
 
-// agent
-const myAgent = new IntentionRevisionRevise(planLibrary);
-myAgent.loop();
+    socket.onSensing(() => optionsGeneration(myAgent));
+    socket.onYou(() => optionsGeneration(myAgent));
 
-// options
-socket.onSensing(() => optionsGeneration(myAgent));
-socket.onYou(() => optionsGeneration(myAgent));
+    return { socket, myAgent };
+}
 
-// setInterval(() => {
-//     console.log("\n AGENT STATE");
-//     console.log("ME:", me);
-//     console.log("PARCELS:", parcels.size);
-//     console.log("AGENTS:", agents.size);
-//     console.log(
-//         "LIST:",
-//         Array.from(parcels.values()).map(p => `${p.id}@(${p.x},${p.y})`)
-//     );
-// }, 1000);
+//createBDI();
+
+/*
+setInterval(() => {
+    console.log("\n AGENT STATE");
+    console.log("ME:", me);
+    console.log("PARCELS:", parcels.size);
+    console.log("AGENTS:", agents.size);
+    console.log(
+        "LIST:",
+        Array.from(parcels.values()).map(p => `${p.id}@(${p.x},${p.y})`)
+    );
+}, 1000);
+*/

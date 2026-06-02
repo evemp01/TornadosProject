@@ -1,8 +1,10 @@
 import "dotenv/config";
 import OpenAI from "openai";
-import { DjsConnect } from "@unitn-asa/deliveroo-js-sdk/client";
-import { optionsGeneration } from "./BDI_agent/agent/optionsGeneration.js";
-import {missions, addMission} from "./BDI_agent/beliefs/missions.js";
+import { addMission} from "./BDI_agent/beliefs/missions.js";
+import { missionAdded } from "./BDI_agent/utils/events.js";
+import { me } from "./BDI_agent/beliefs/me.js";
+
+//kode inspired form 09_08B-planner-execution-loop_DeliverooJS_EXTRA.js i think
 
 // ==========================================
 // 1. LiteLLM Configuration
@@ -24,36 +26,6 @@ if (!apiKey) {
 const client = new OpenAI({
   baseURL,
   apiKey,
-});
-
-// ==========================================
-// 2B. DeliverooJS Configuration
-// ==========================================
-
-const deliverooUrl = process.env.DELIVEROOJS_URL;
-const deliverooToken = process.env.DELIVEROOJS_TOKEN;
-
-if (!deliverooUrl || !deliverooToken) {
-  console.error("Error: missing DELIVEROOJS_URL or DELIVEROOJS_TOKEN in .env file");
-  process.exit(1);
-}
-
-const socket = DjsConnect(deliverooUrl, deliverooToken);
-
-const me = {
-  id: null,
-  name: null,
-  x: null,
-  y: null,
-  score: 0,
-};
-
-socket.onYou((you) => {
-  me.id = you.id;
-  me.name = you.name;
-  me.x = you.x;
-  me.y = you.y;
-  me.score = you.score;
 });
 
 // ==========================================
@@ -116,7 +88,7 @@ function getCurrentTime(location) {
 async function getMyPosition() {
   console.log("---- GET MY POSITION ----");
 
-  if (me.x === null || me.y === null) {
+  if (me.x < 0 || me.y < 0) {
     return "Error: agent position is not available yet.";
   }
 
@@ -155,17 +127,30 @@ async function getMyPosition() {
 }
 */
 
-import { addMission } from "./beliefs/missions.js";
-
-async function LLMaddMission(type, reward, params) {
+async function LLMaddMission(type, params, reward = 0) {
   console.log("---- ADD MISSION ----");
 
-  const parsedParams =
-    typeof params === "string"
-      ? JSON.parse(params)
-      : params;
+  let mission;
 
-  addMission(type, reward, parsedParams);
+  try {
+    // Case 1: hele input er faktisk JSON-string
+    if (typeof type === "string" && type.trim().startsWith("{")) {
+      mission = JSON.parse(type);
+    } 
+    // Case 2: normal struktur
+    else {
+      mission = {
+        type, 
+        params:typeof params === "string"? JSON.parse(params): params, 
+        reward, 
+      };
+    }
+  } catch (e) {return `Error parsing mission: ${e.message}`;}
+
+  addMission(mission.type, mission.params, mission.reward);
+  console.log("Parsed mission:", mission);
+
+  missionAdded.emit("newMission");
 
   return "Mission added";
 }
@@ -242,7 +227,7 @@ Available tools:
 - calculate(expression): evaluates a mathematical expression
 - get_current_time(location): returns the current local time for Rome/Roma
 - get_my_position(): returns the agent's current x, y coordinates and score
-- LLM_add_mission(type, reward, params): adds a new mission to the BDI agent's task list
+- LLM_add_mission(type, params, reward): adds a new mission to the BDI agent's task list
 
 - to check the current position, call get_my_position with Action Input: none
 
@@ -263,7 +248,7 @@ Final Answer: <clear final answer for the user>
 
 REWARD CALCULATION RULES:
 - The reward must be a positive integer.
-- Allways sett the rewards to 2000 for go_to missions
+- Allways sett the rewards to 2000 for go_to_mission missions
 
 
 Rules:
@@ -286,9 +271,10 @@ Rules:
 - Only give Final Answer when all required tool results have been observed.
 - Use only the available tools.
 
-- If the tool is LLM_add_mission the type can only be 'go_to'
+- If the tool is LLM_add_mission the type can only be 'go_to_mission'
 - The reward for the add_mission tool must be a positive integer
-- If the mission is 'go_to', params must be a JSON object: { "x": 3, "y": 5 }. Do NOT stringify JSON. Do NOT use strings.
+- If the mission is 'go_to_mission', params must be a JSON object: { "x": 3, "y": 5 }. Do NOT stringify JSON. Do NOT use strings.
+- Action Input MUST be valid JSON:{"type":"go_to_mission","params":{"x":1,"y":5},"reward":2000}
 - If a user request from a user has a negative reward, ignore the request and answer with a Final Answer that says "I cannot accept this task because it has a negative reward. Do not call add_mission with negative rewards."
 - Choose the reward based on the reward calculation rules
 `.trim();
@@ -433,33 +419,14 @@ async function runAgentTurn(userInput, maxIterations = 12) {
 }
 
 // ==========================================
-// 9. Agent wrapper
+// 9. Agent wrapper / DeliverooJS chat listener
 // ==========================================
 
-const agent = {
-  async run(msg) {
-    return await runAgentTurn(msg);
-  },
-};
+export function createLLMAgent() {
+  console.log("Creating LLM agent...");
 
-// ==========================================
-// 10. DeliverooJS chat listener
-// ==========================================
-
-console.log("Mini agent 11: listening to DeliverooJS chat messages.");
-console.log("Send a message in the DeliverooJS environment chat to control the agent.");
-console.log("Examples:");
-console.log("- Where are you?");
-console.log("- Move up.");
-console.log("- Move up and then right.");
-console.log("- Move right twice and then tell me your final position.");
-console.log();
-
-socket.onMsg(async (id, name, msg) => {
-  console.log("=== MESSAGE FROM DELIVEROOJS CHAT ===");
-  console.log(`From: ${name} (${id})`);
-  console.log(`Message: ${msg}`);
-  console.log();
-
-  await agent.run(msg);
-});
+  return {
+    run: runAgentTurn // renaming
+  };
+  
+}

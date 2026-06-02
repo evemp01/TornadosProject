@@ -8,6 +8,7 @@ export class IntentionRevision {
 
     /** @type {IntentionDeliberation[]} */
     #intention_queue = new Array();
+
     get intention_queue () {
         return this.#intention_queue;
     }
