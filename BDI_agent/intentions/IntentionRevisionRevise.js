@@ -44,13 +44,13 @@ export class IntentionRevisionRevise extends IntentionRevision {
     }
 
     async push(predicate) {
-        console.log('Revising intention queue. Received', ...predicate);
+        // console.log('Revising intention queue. Received', ...predicate);
 
         // Remove invalid intentions (parcels already taken)
         for (const i of this.intention_queue) {
             if (i.predicate[0] === 'go_pick_up') {
                 const parcel = parcels.get(i.predicate[3]);
-                if (!parcel || parcel.carriedBy) {
+                if (parcel && parcel.carriedBy && parcel.carriedBy !== me.id) {
                     i.stop();
                 }
             }
@@ -67,7 +67,7 @@ export class IntentionRevisionRevise extends IntentionRevision {
         // Sort by utility
         this.intention_queue.sort((a, b) => this.utility(b.predicate) - this.utility(a.predicate));
 
-        // If the new intention is now the best, stop current one
+        // If the new intention is now the best, stop the currently running one (index 1 after sort)
         const best = this.intention_queue[0];
         if (best.predicate.join(' ') === predicate.join(' ')) {
             if (this.intention_queue[1])

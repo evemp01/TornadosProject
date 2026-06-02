@@ -1,5 +1,6 @@
 import { isWalkable, getDirection } from '../beliefs/map.js';
 import { agents } from '../beliefs/agents.js';
+import { crates } from '../beliefs/crates.js';
 import { me } from '../beliefs/me.js'; 
 import { distance } from './distance.js';
 
@@ -7,12 +8,10 @@ export function astar(start, goal) {
   const openList = [];
   const visited = new Set();
 
-
-  // Build a set of blocked positions from other agents
-  const agentPositions = new Set(
-      Array.from(agents.values())
-          .filter(a => a.id !== me.id)
-          .map(a => `${Math.round(a.x)},${Math.round(a.y)}`)
+  // Build a set of blocked positions from crates
+  const cratePositions = new Set(
+      Array.from(crates.values())
+          .map(c => `${Math.round(c.x)},${Math.round(c.y)}`)
   );
 
   openList.push({ x: start.x, y: start.y, g: 0, parent: null });
@@ -57,7 +56,7 @@ export function astar(start, goal) {
           };
           if (!allowed[forcedDirection]) continue; // skip this neighbour
       }
-      if (!visited.has(`${n.x},${n.y}`) && isWalkable(n.x, n.y) && !agentPositions.has(`${n.x},${n.y}`)) {
+      if (!visited.has(`${n.x},${n.y}`) && isWalkable(n.x, n.y) && !cratePositions.has(`${n.x},${n.y}`)) {
         openList.push({ ...n, g: current.g + 1, parent: current });
       }
     }

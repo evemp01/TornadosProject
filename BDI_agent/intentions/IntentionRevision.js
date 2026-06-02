@@ -23,7 +23,7 @@ export class IntentionRevision {
                 
                 // Is queued intention still valid? Do I still want to achieve it?
                 // TODO this hard-coded implementation is an example
-                let id = intention.predicate[2]
+                let id = intention.predicate[3]
                 let p = parcels.get(id)
                 if ( p && p.carriedBy ) {
                     console.log( 'Skipping intention because no more valid', intention.predicate );

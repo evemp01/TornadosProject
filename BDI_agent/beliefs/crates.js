@@ -4,6 +4,9 @@ export const crates = new Map();
 export function initCrates(socket) {
     socket.onSensing((sensing) => {
 
+        if (!sensing.crates || sensing.crates.length === 0) {
+            return; // ignore bad frame
+        }
         // update / add crates
         for (const c of sensing.crates) {
             crates.set(c.id, c);
@@ -15,6 +18,6 @@ export function initCrates(socket) {
                 crates.delete(c.id);
             }
         }
-
+        console.log('Crates updated:', Array.from(crates.values()));
     });
 }

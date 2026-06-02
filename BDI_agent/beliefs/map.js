@@ -34,7 +34,7 @@ export function initMap(socket) {
 
 export function isWalkable(x, y) {
     const type = grid.get(`${x},${y}`);
-    return type == 1 || type == 2 || type == 3 || type === 'directional';
+    return type == 1 || type == 2 || type == 3 || type === 'directional' || type == 5; 
 }
 
 export function isDelivery(x, y) {
