@@ -4,6 +4,7 @@ export const spawnTiles = [];
 export const blackTiles = [];
 export const whiteTiles = [];
 export const directionalTiles = new Map(); // key: `${x},${y}` → direction
+export const crateTiles = new Map();
 export let mapWidth = 0;
 export let mapHeight = 0;
 
@@ -15,16 +16,18 @@ export function initMap(socket) {
         //console.log('onMap fired! tiles:', tiles.length);
 
         for (const tile of tiles) {
-            grid.set(`${tile.x},${tile.y}`, tile.type);
-            //console.log(tile.type);
-            if (tile.type == 0) blackTiles.push(tile);
-            if (tile.type == 1) spawnTiles.push(tile);
-            if (tile.type == 2) deliveryTiles.push(tile);
-            if (tile.type == 3) whiteTiles.push(tile);
-            if (tile.type === '→' || tile.type === '←' || tile.type === '↑' || tile.type === '↓') {
-                directionalTiles.set(`${tile.x},${tile.y}`, tile.type);
+            if (tile.type == 0) {grid.set(`${tile.x},${tile.y}`, 0); blackTiles.push(tile);}
+            else if (tile.type == 1) {grid.set(`${tile.x},${tile.y}`, 1); spawnTiles.push(tile);}
+            else if (tile.type == 2) {grid.set(`${tile.x},${tile.y}`, 2); deliveryTiles.push(tile);}
+            else if (tile.type == 3) {grid.set(`${tile.x},${tile.y}`, 3); whiteTiles.push(tile);}
+            else if (tile.type === '→' || tile.type === '←' || tile.type === '↑' || tile.type === '↓') {
                 grid.set(`${tile.x},${tile.y}`, 'directional');
+                directionalTiles.set(`${tile.x},${tile.y}`, tile.type);
             } 
+            else if (tile.type == 5 || tile.type == '5!') {
+                grid.set(`${tile.x},${tile.y}`, 5);
+                crateTiles.set(`${tile.x},${tile.y}`, { x: tile.x, y: tile.y });
+            }
         }
     });
 }
