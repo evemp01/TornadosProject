@@ -1,11 +1,13 @@
 export const missions = [];
 
-export function addMission(type, reward = 0, params = null) {
+export function addMission(type, params = null, reward = 0) {
     missions.push({
         type,
-        reward,
-        params
+        params,
+        reward  
     });
+
+    console.log(missions);
 }
 
 //possible missions:

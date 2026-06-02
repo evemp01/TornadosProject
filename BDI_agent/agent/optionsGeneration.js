@@ -21,16 +21,9 @@ export function optionsGeneration(myAgent) {
         myAgent.push(['go_spawn']);
 
     for (const m of missions) {
-
         switch (m.type) {
-
-            case 'go_to':
-                myAgent.push([
-                    'go_to',
-                    m.params.x,
-                    m.params.y,
-                    m.reward
-                ]);
+            case 'go_to_mission':
+                myAgent.push(['go_to_mission', m.params.x, m.params.y, m.reward ]);
                 break;
         }
     }

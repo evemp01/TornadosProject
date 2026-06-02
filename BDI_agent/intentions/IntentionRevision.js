@@ -8,6 +8,7 @@ export class IntentionRevision {
 
     /** @type {IntentionDeliberation[]} */
     #intention_queue = new Array();
+
     get intention_queue () {
         return this.#intention_queue;
     }
@@ -23,6 +24,7 @@ export class IntentionRevision {
                 
                 // Is queued intention still valid? Do I still want to achieve it?
                 // TODO this hard-coded implementation is an example
+                //??????????????????????????????????????????????????????
                 let id = intention.predicate[2]
                 let p = parcels.get(id)
                 if ( p && p.carriedBy ) {

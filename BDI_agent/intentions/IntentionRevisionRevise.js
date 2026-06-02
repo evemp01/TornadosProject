@@ -14,7 +14,7 @@ export class IntentionRevisionRevise extends IntentionRevision {
     }
 
     utility(predicate) {
-        const [action, x, y, id] = predicate;
+        const [action, x, y, payload] = predicate;
 
         // If she is carrying parcels worth 45 points and the nearest delivery is 5 steps away, deliver utility = 40. 
         // If a nearby parcel has reward - distance = 8 - 2 = 6, delivering wins. 
@@ -31,6 +31,7 @@ export class IntentionRevisionRevise extends IntentionRevision {
         }
 
         if (action === 'go_pick_up') {
+            const id = payload; 
             const parcel = parcels.get(id);
             if (!parcel || parcel.carriedBy) return -1;
             const d = distance({ x, y }, me);
@@ -39,6 +40,11 @@ export class IntentionRevisionRevise extends IntentionRevision {
 
         // If no parcels are spawning at the spawn tile, then the agent should try a new one after a while
         if (action === 'go_spawn') return 1;
+
+        if (action === 'go_to_mission') {
+            const reward = payload;
+            return Math.max(0, reward); //direct LLM rewart or 0 if negative
+        }
 
         return -1;
     }
