@@ -201,9 +201,10 @@ async function processQueue() {
 
 
 TODO level 1:
-- sikre at den fortsetter å gå med BDI etter et at mission er lagt til
-- dropp final answere for LLMen
-- legge til sånn at den bare tar meldinger fra en spesifikk agent
+- sikre at den fortsetter å gå med BDI etter et at mission er lagt til - hvorfor tømmes køen når den er ferdig med et oppdrag? og hvorfor leverer den aldri pakkene?!!!!!!!!!!!!!!!!!!!!!!!!
+- (dropp final answere for LLMen)
+- legge til sånn at den bare tar meldinger fra en spesifikk agent: men da må vi fikse litt på socket plassering og kanskje gjøre slik at ingen importerer socket fra main
+- legg til at den ikke får 2000 for messages men sum som er basert på meldingen
 - mission: drop a package at leftmost tile
 
 TODO level 2:
@@ -211,3 +212,253 @@ TODO level 2:
 exs: every time deliver here you get 0 points 
 exs: everytime you go through this point you ...¨
 exs: deliver exactly 3 parcel at a time to ...
+
+C:\Users\sarao\Downloads\UTONOMUS SOFTWARE AGENTS\Project_files>node main.js
+Connecting to https://deliveroojs.bears.disi.unitn.it with token eyJhb...Zx5j4
+Creating LLM agent...
+Connected
+Authenticated as tornado2(b8953d) in team undefined(undefined)
+
+=== INTENTION QUEUE ===
+[
+  [ 'go_pick_up', 0, 9, 'p110348' ],
+  [ 'go_pick_up', 0, 8, 'p110346' ],
+  [ 'go_deliver' ],
+  [ 'go_spawn' ]
+]
+--- Agent iteration 1 ---
+
+=== INTENTION QUEUE ===
+[
+  [ 'go_pick_up', 0, 10, 'p110352' ],
+  [ 'go_pick_up', 0, 8, 'p110346' ],
+  [ 'go_pick_up', 0, 7, 'p110353' ],
+  [ 'go_pick_up', 0, 9, 'p110350' ],
+  [ 'go_spawn' ]
+]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+Assistant output:
+Thought: To go to the location (10, 10), I need to add a new mission to the BDI agent's task list with the type 'go_to_mission' and the specified coordinates.
+Action: LLM_add_mission
+Action Input: {"type":"go_to_mission","params":{"x":10,"y":10},"reward":2000}
+
+[System executing tool: LLM_add_mission("{"type":"go_to_mission","params":{"x":10,"y":10},"reward":2000}")]
+---- ADD MISSION ----
+[ { type: 'go_to_mission', x: 10, y: 10, reward: 2000 } ]
+[Observation: Mission added]
+
+--- Agent iteration 2 ---
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+Assistant output:
+Thought: I have enough information to answer.
+Final Answer: Mission to go to (10, 10) has been added.
+
+Assistant: Mission to go to (10, 10) has been added.
+
+
+=== INTENTION QUEUE ===
+[
+  [ 'go_to_mission', 10, 10, 2000 ],
+  [ 'go_pick_up', 0, 10, 'p110426' ],
+  [ 'go_pick_up', 0, 9, 'p110432' ],
+  [ 'go_pick_up', 0, 7, 'p110423' ],
+  [ 'go_pick_up', 0, 8, 'p110428' ],
+  [ 'go_spawn' ]
+]
+
+=== INTENTION QUEUE ===
+[
+  [ 'go_to_mission', 10, 10, 2000 ],
+  [ 'go_pick_up', 0, 9, 'p110441' ],
+  [ 'go_deliver' ],
+  [ 'go_pick_up', 0, 7, 'p110423' ],
+  [ 'go_spawn' ],
+  [ 'go_pick_up', 0, 8, 'p110428' ],
+  [ 'go_pick_up', 0, 9, 'p110432' ]
+]
+
+=== INTENTION QUEUE ===
+[
+  [ 'go_to_mission', 10, 10, 2000 ],
+  [ 'go_deliver' ],
+  [ 'go_pick_up', 0, 7, 'p110444' ],
+  [ 'go_pick_up', 0, 8, 'p110443' ],
+  [ 'go_spawn' ],
+  [ 'go_pick_up', 0, 10, 'p110442' ]
+]
+
+=== INTENTION QUEUE ===
+[
+  [ 'go_to_mission', 10, 10, 2000 ],
+  [ 'go_deliver' ],
+  [ 'go_pick_up', 0, 8, 'p110448' ],
+  [ 'go_pick_up', 0, 9, 'p110449' ],
+  [ 'go_spawn' ],
+  [ 'go_pick_up', 0, 7, 'p110447' ]
+]
+
+=== INTENTION QUEUE ===
+[ [ 'go_spawn' ] ]
+
+=== INTENTION QUEUE ===
+[ [ 'go_spawn' ] ]
+
+=== INTENTION QUEUE ===
+[ [ 'go_to_mission', 10, 10, 2000 ], [ 'go_deliver' ], [ 'go_spawn' ] ]
+
+=== INTENTION QUEUE ===
+[ [ 'go_to_mission', 10, 10, 2000 ], [ 'go_deliver' ], [ 'go_spawn' ] ]
+
+=== INTENTION QUEUE ===
+[ [ 'go_to_mission', 10, 10, 2000 ], [ 'go_deliver' ], [ 'go_spawn' ] ]
+
+=== INTENTION QUEUE ===
+[ [ 'go_spawn' ] ]
+
+=== INTENTION QUEUE ===
+[ [ 'go_spawn' ] ]
+
+=== INTENTION QUEUE ===
+[ [ 'go_to_mission', 10, 10, 2000 ], [ 'go_deliver' ], [ 'go_spawn' ] ]
+
+=== INTENTION QUEUE ===
+[ [ 'go_to_mission', 10, 10, 2000 ], [ 'go_deliver' ], [ 'go_spawn' ] ]
+
+=== INTENTION QUEUE ===
+[ [ 'go_to_mission', 10, 10, 2000 ], [ 'go_deliver' ], [ 'go_spawn' ] ]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
+
+=== INTENTION QUEUE ===
+[]
