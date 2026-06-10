@@ -1,4 +1,5 @@
 import { optionsGeneration } from '../agent/optionsGeneration.js';
+import { getSocket } from './socketManager.js';
 
 const chatQueue = [];
 let latestSensing = false;
@@ -18,8 +19,17 @@ async function processQueue() {
     try {
         // 1. chat ALWAYS first
         while (chatQueue.length > 0) {
+
             const msg = chatQueue.shift();
-            await llmAgent.run(msg);
+            const response = await llmAgent.run(msg);
+
+            if (response) {
+                const socket = getSocket();
+                if (!socket) {
+                    throw new Error("Socket not initialized");
+                }    
+                await socket.emitSay(response);// nope no socket in eventQueue???????????????????????????????
+            }
             optionsGeneration(bdiAgent);
         }
 

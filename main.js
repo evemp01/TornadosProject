@@ -12,6 +12,7 @@ import { missionAdded } from "./BDI_agent/utils/events.js";
 import {createBDI} from "./main_BDI.js";
 import { setLLMAgent, setBDIAgent, pushEvent, running } from "./BDI_agent/utils/eventQueue.js";
 //import readline from "readline";
+import { setSocket } from "./BDI_agent/utils/socketManager.js";
 
 
 //masterName2 = tornado2
@@ -34,6 +35,8 @@ console.log(`DeliverooJS Token: ${DELIVEROOJS_TOKEN}`);
 
 const { socket, myAgent: bdiAgent } = createBDI(); // Initialize BDI agent and get socket reference
 setBDIAgent(bdiAgent); 
+setSocket(socket);
+
 
 //-----------------------------------------------------------------
 //LLM Agent Initialization
@@ -44,11 +47,14 @@ setLLMAgent(llmAgent);
 
 missionAdded.on("newMission", () => {optionsGeneration(bdiAgent);});
 
+
+//name: 'admin' id: 00a552
 socket.onMsg(async (id, name, msg) => {
     console.log(`Received message from ${name}:`, msg);
-    if (name) {
-        pushEvent('chatMsg', msg);
-    }
+    //if (name == 'admin') {
+    //    pushEvent('chatMsg', msg);
+    //}
+    pushEvent('chatMsg', msg);
 });
 
 setInterval(() => {

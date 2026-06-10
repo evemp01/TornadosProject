@@ -1,10 +1,13 @@
+//main_LLM.js
 import "dotenv/config";
 import OpenAI from "openai";
 import { addMission} from "./BDI_agent/beliefs/missions.js";
 import { missionAdded } from "./BDI_agent/utils/events.js";
 import { me } from "./BDI_agent/beliefs/me.js";
+import { sendMessageToSocket } from "./BDI_agent/utils/socketManager.js";
 
 //kode inspired form 09_08B-planner-execution-loop_DeliverooJS_EXTRA.js i think
+
 
 // ==========================================
 // 1. LiteLLM Configuration
@@ -102,31 +105,6 @@ async function getMyPosition() {
 }
 
 
-/* async function move(direction) {
-  console.log("---- MOVE ----");
-
-  const normalized = direction.trim().toLowerCase();
-
-  const validDirections = ["up", "down", "left", "right"];
-
-  if (!validDirections.includes(normalized)) {
-    return `Error: invalid direction '${direction}'. Valid directions are: up, down, left, right.`;
-  }
-
-  try {
-    const result = await socket.emitMove(normalized);
-
-    if (result) {
-      return `Successfully moved ${normalized}. New position: ${JSON.stringify(result)}.`;
-    }
-
-    return `Error: failed to move ${normalized}.`;
-  } catch (error) {
-    return `Error: moving ${normalized} failed: ${error.message}`;
-  }
-}
-*/
-
 async function LLMaddMission(type, params, reward = 0) {
   console.log("---- ADD MISSION ----");
 
@@ -154,11 +132,35 @@ async function LLMaddMission(type, params, reward = 0) {
   return "Mission added";
 }
 
+// async function doNotGoTo()  {
+//  return 
+//}
+
+//types: 'number', 
+async function answereInChat(type, msg) {
+  sendMessageToSocket(type, msg);
+  return 'Message sent to chat';
+}
+
+/*async function deliverAt() {
+  return 
+}
+
+async function doNotDeliverAt() {
+  return 
+}
+*/
+
+//tool-name, java function
 const TOOLS = {
   calculate,
   get_current_time: getCurrentTime,
   get_my_position: getMyPosition,
   LLM_add_mission: LLMaddMission,
+  //do_not_go_to: doNotGoTo,
+  answere_in_chat: answereInChat,
+  //deliver_at: deliverAt,
+  //do_not_deliver_at: doNotDeliverAt
 };
 
 // ==========================================
@@ -227,6 +229,7 @@ Available tools:
 - get_current_time(location): returns the current local time for Rome/Roma
 - get_my_position(): returns the agent's current x, y coordinates and score
 - LLM_add_mission(type, params, reward): adds a new mission to the BDI agent's task list
+- answere_in_chat(type,message): sends a reply to the user who triggered the request
 
 - to check the current position, call get_my_position with Action Input: none
 
@@ -249,6 +252,11 @@ REWARD CALCULATION RULES:
 - The reward must be a positive integer.
 - Allways sett the rewards to 2000 for go_to_mission missions
 
+MISSION TYPES for LLM_add_mission: 
+- go_to_mission: Move the agent to a specified location.
+
+MESSAGE TYPE for answere_in_chat:
+- 'number'
 
 Rules:
 - Output exactly one action at a time.
@@ -263,19 +271,29 @@ Rules:
 - If the user asks for arithmetic, call calculate before answering.
 - If the user asks for the current time in Rome/Roma, call get_current_time before answering.
 - If the user asks where the agent is, call get_my_position before answering.
-- If the user asks to move, call BDIagentMove(x,y).
+- If the user asks to move, call LLM_add_mission('go_to_mission', params, reward):
+- Every time the function calculate is called, call the function answere_in_chat with the calculation result 
+- Use answere_in_chat when you want to send a message to the user instead of Final Answer
 - If the user asks for the final position after moving, call get_my_position after the movements.
 - If the user asks for multiple things, solve one thing at a time.
 - After receiving an Observation, check whether the original user request still has unresolved parts.
 - Only give Final Answer when all required tool results have been observed.
 - Use only the available tools.
 
-- If the tool is LLM_add_mission the type can only be 'go_to_mission'
-- The reward for the add_mission tool must be a positive integer
+- Input to answere_in_chat must be a strings. 
+- The type must be 'number'
+- If the type is 'number', the msg must be a string of the number. exs: '42'
+- Every time the function calculate is called, call the function answere_in_chat with the calculation result. 
+- Use answere_in_chat when you want to send a message to the user instead of Final Answer.
+
+- If the tool is LLM_add_mission the type can only be 'go_to_mission'.
+- The reward for the add_mission tool must be a positive integer.
 - If the mission is 'go_to_mission', params must be a JSON object: { "x": 3, "y": 5 }. Do NOT stringify JSON. Do NOT use strings.
 - Action Input MUST be valid JSON:{"type":"go_to_mission","params":{"x":1,"y":5},"reward":2000}
 - If a user request from a user has a negative reward, ignore the request and answer with a Final Answer that says "I cannot accept this task because it has a negative reward. Do not call add_mission with negative rewards."
 - Choose the reward based on the reward calculation rules
+
+- 
 `.trim();
 
 // ==========================================

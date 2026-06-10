@@ -203,15 +203,36 @@ async function processQueue() {
 TODO level 1:
 - sikre at den fortsetter å gå med BDI etter et at mission er lagt til - hvorfor tømmes køen når den er ferdig med et oppdrag? og hvorfor leverer den aldri pakkene?!!!!!!!!!!!!!!!!!!!!!!!!
 - (dropp final answere for LLMen)
-- legge til sånn at den bare tar meldinger fra en spesifikk agent: men da må vi fikse litt på socket plassering og kanskje gjøre slik at ingen importerer socket fra main
 - legg til at den ikke får 2000 for messages men sum som er basert på meldingen
 - mission: drop a package at leftmost tile
+- calculate + andre spørsmål: svar i chatten : (5*(5+3)/2)+2
+- add: do not go to
+- do not give parcel at ...
+- fix: Du har dobbel logging (samme event to ganger)
+Typiske årsaker:
+processQueue() trigges to steder
+event emitter + loop begge kjører
+intention re-added uten å fjernes
+eller optionsGeneration() re-trigges dobbelt
+--> se log i plaBase og IntentionDeliberation
+
+BDDI:
+- når agenten er på spawn tiles la den gå rundt på de forskjellige for å skjekke
 
 TODO level 2:
 - LLM endrer reward / endrer map
 exs: every time deliver here you get 0 points 
 exs: everytime you go through this point you ...¨
 exs: deliver exactly 3 parcel at a time to ...
+- deliver parcels with score less than ..
+- tool: RED LIGHT! Stop moving until the next green light!
+
+TODO level 4
+Legge til at to snakker med hverandre: 
+- ta inn fra terminal: admin/ not admin
+- så velger den tolek osv ut fra der
+- ? men da må vi fikse litt på socket plassering og kanskje gjøre slik at ingen importerer socket fra main
+
 
 C:\Users\sarao\Downloads\UTONOMUS SOFTWARE AGENTS\Project_files>node main.js
 Connecting to https://deliveroojs.bears.disi.unitn.it with token eyJhb...Zx5j4

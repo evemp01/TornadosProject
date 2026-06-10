@@ -18,6 +18,6 @@ export function initCrates(socket) {
                 crates.delete(c.id);
             }
         }
-        console.log('Crates updated:', Array.from(crates.values()));
+        //console.log('Crates updated:', Array.from(crates.values()));
     });
 }
