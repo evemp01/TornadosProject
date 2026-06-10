@@ -14,9 +14,9 @@ export function astar(start, goal) {
           .map(c => `${Math.round(c.x)},${Math.round(c.y)}`)
   );
 
+    // Build a set of blocked positions from agents
   const agentPositions = new Set(
       Array.from(agents.values())
-          .filter(a => a.id !== me.id) // ignore self
           .map(a => `${Math.round(a.x)},${Math.round(a.y)}`)
   );
 
@@ -62,7 +62,7 @@ export function astar(start, goal) {
           };
           if (!allowed[forcedDirection]) continue; // skip this neighbour
       }
-      if (!visited.has(`${n.x},${n.y}`) && isWalkable(n.x, n.y) && !cratePositions.has(`${n.x},${n.y}`) && !agentPositions.has(`${n.x},${n.y}`)) {
+      if (!visited.has(`${n.x},${n.y}`) && isWalkable(n.x, n.y) && !cratePositions.has(`${n.x},${n.y}`)) {
         openList.push({ ...n, g: current.g + 1, parent: current });
       }
     }
