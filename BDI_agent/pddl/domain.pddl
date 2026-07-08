@@ -7,6 +7,7 @@
         (is-crate-tile ?pos)     ; Allowed tile for crates
         (connected ?from ?to)    ; Map grid connectivity
         (empty ?pos)             ; True if tile has NO agent and NO crate
+        (aligned ?a ?b ?c)          ; True if three tiles are aligned (for pushing crates) 
     )
 
     ; 1. Regular Move: Walking into a completely empty tile
@@ -34,6 +35,7 @@
             (connected ?from ?crate-pos)    ; Agent walks towards the crate
             (crate-at ?crate ?crate-pos)    ; The crate is there
             (connected ?crate-pos ?behind-pos) ; There is a tile directly behind it
+            (aligned ?from ?crate-pos ?behind-pos) ; The three tiles are aligned
             (is-crate-tile ?behind-pos)     ; The tile behind MUST be a crateTile
             (empty ?behind-pos)             ; The tile behind must be empty
         )

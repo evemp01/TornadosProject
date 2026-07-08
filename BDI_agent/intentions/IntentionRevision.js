@@ -8,9 +8,13 @@ export class IntentionRevision {
 
     /** @type {IntentionDeliberation[]} */
     #intention_queue = new Array();
+    #running = null;
 
     get intention_queue () {
         return this.#intention_queue;
+    }
+    get running () {
+        return this.#running;
     }
 
     async loop ( ) {
@@ -21,9 +25,6 @@ export class IntentionRevision {
             
                 // Current intention
                 const intention = this.intention_queue[0];
-                
-                // Is queued intention still valid? Do I still want to achieve it?
-                // TODO this hard-coded implementation is an example
                 let id = intention.predicate[3]
                 let p = parcels.get(id)
                 if ( p && p.carriedBy ) {
@@ -33,14 +34,19 @@ export class IntentionRevision {
                 }
 
                 // Start achieving intention
+                this.#running = intention;
                 await intention.achieve()
                 // Catch eventual error and continue
                 .catch( error => {
                     // console.log( 'Failed intention', ...intention.predicate, 'with error:', ...error )
                 } );
-
+                this.#running = null;
                 // Remove from the queue
-                this.intention_queue.shift();
+
+                const index = this.intention_queue.indexOf(intention);
+                if ( index !== -1 ) {
+                    this.intention_queue.splice(index, 1);
+                }
             }
             // Postpone next iteration at setImmediate
             await new Promise( res => setImmediate( res ) );

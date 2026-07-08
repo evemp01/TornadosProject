@@ -39,6 +39,10 @@ export class IntentionDeliberation {
 
     #planLibrary;
 
+    get committed () {
+        return this.#current_plan ? !!this.#current_plan.committed : false;
+    }
+
     /**
      * @param { IntentionDeliberation } parent 
      * @param { [string, ...any] } predicate 
@@ -87,14 +91,11 @@ export class IntentionDeliberation {
                     return plan_res || false;
                 // or errors are caught so to continue with next plan
                 } catch (error) {
+                    if ( this.stopped) throw error;
                     this.log( 'failed intention', ...this.predicate,'with plan', planClass.name, 'with error:', error );
                 }
             }
-
         }
-
-        // if stopped then quit
-        if ( this.stopped ) throw [ 'stopped intention', ...this.predicate ];
 
         // no plans have been found to satisfy the intention
         // this.log( 'no plan satisfied the intention ', ...this.predicate );

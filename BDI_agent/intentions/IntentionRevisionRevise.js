@@ -29,13 +29,13 @@ export class IntentionRevisionRevise extends IntentionRevision {
             // Deliver score grows with reward and shrinks with distance
             return totalReward - nearestDelivery;
         }
-
+        // Before we compared distance to parcel worth, but it doesnt correspond because then go pick up wins a lot of cases
         if (action === 'go_pick_up') {
-            const id = payload; 
-            const parcel = parcels.get(id);
+            const parcel = parcels.get(payload);
             if (!parcel || parcel.carriedBy) return -1;
-            const d = distance({ x, y }, me);
-            return parcel.reward - d; // use actual reward, not flat 100
+
+            const STEP_COST = 0.05; // 1 pt/s decay × 0.05 s/tile = 0.05 pts per tile
+            return parcel.reward - distance({ x, y }, me) * STEP_COST;
         }
 
         // If no parcels are spawning at the spawn tile, then the agent should try a new one after a while
@@ -69,15 +69,19 @@ export class IntentionRevisionRevise extends IntentionRevision {
         // Add new intention
         const intention = new IntentionDeliberation(this, predicate, this.planLibrary);
         this.intention_queue.push(intention);
-
         // Sort by utility
         this.intention_queue.sort((a, b) => this.utility(b.predicate) - this.utility(a.predicate));
 
+        const running = this.running;
+        if (!running) return;
+        if (running.committed) return;
         // If the new intention is now the best, stop the currently running one (index 1 after sort)
         const best = this.intention_queue[0];
-        if (best.predicate.join(' ') === predicate.join(' ')) {
-            if (this.intention_queue[1])
-                this.intention_queue[1].stop();
+        if (best.predicate.join(' ') !== predicate.join(' ')) return;
+        
+        const PREEMPT_THRESHOLD = 5; // utility difference threshold for preemption
+        if (this.utility(best.predicate) - this.utility(running.predicate) >= PREEMPT_THRESHOLD) {
+            running.stop();
         }
     }
 }

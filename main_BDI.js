@@ -8,7 +8,7 @@ import { initCrates, crates } from "./BDI_agent/beliefs/crates.js";
 import { IntentionRevisionRevise } from "./BDI_agent/intentions/IntentionRevisionRevise.js";
 import { planLibrary } from "./BDI_agent/plans/index.js";
 import { optionsGeneration } from "./BDI_agent/agent/optionsGeneration.js";
-import { pushEvent } from "./BDI_agent/utils/eventQueue.js";
+import { pushEvent, setBDIAgent } from "./BDI_agent/utils/eventQueue.js";
 
 //obs goPickUp.js uses socket
 
@@ -22,6 +22,7 @@ export function createBDI() {
     initCrates(socket);
 
     const myAgent = new IntentionRevisionRevise(planLibrary);
+    setBDIAgent(myAgent);
     myAgent.loop();
 
     socket.onSensing(() => {
@@ -35,7 +36,7 @@ export function createBDI() {
     return { socket, myAgent };
 }
 
-//createBDI();
+createBDI();
 
 
 /*

@@ -19,10 +19,20 @@ export class PlanBase {
     }
 
     /**
+     * #commited means a plan should not be interrupted by a new plan.
+     */
+    #commited = false;
+    commit(){
+        this.#commited = true;
+    }
+    get committed(){
+        return this.#commited || this.#sub_intentions.some(i => i.committed);
+    }
+
+    /**
      * #parent refers to caller
      */
     #parent;
-
     /**
      * @param { PlanBase } parent
      */
