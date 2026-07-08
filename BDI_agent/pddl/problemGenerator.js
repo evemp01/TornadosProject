@@ -49,6 +49,21 @@ export async function planCrateMovement(goalPos) {
         }
     }
 
+    // Aligned triples for pushing: from -> crate-pos -> behind, collinear & consecutive.
+    // For each walkable middle tile, look one step back (from) and one step forward (behind)
+    // along each axis. Iterating all 4 directions covers both orientations of every line.
+    let alignedPredicates = '';
+    for (const tile of allWalkableTiles) {
+        for (const dir of directions) {
+            const from   = { x: tile.x - dir.dx, y: tile.y - dir.dy };
+            const behind = { x: tile.x + dir.dx, y: tile.y + dir.dy };
+            if (walkableMap.has(`${from.x},${from.y}`) && walkableMap.has(`${behind.x},${behind.y}`)) {
+                alignedPredicates +=
+                    `        (aligned ${getTileName(from.x, from.y)} ${getTileName(tile.x, tile.y)} ${getTileName(behind.x, behind.y)})\n`;
+            }
+        }
+    }
+
     // 6. Hitta vilka rutor som är crateTiles
     let crateTilePredicates = '';
     for (const tile of crateTiles.values()) {
@@ -85,6 +100,7 @@ export async function planCrateMovement(goalPos) {
                             ${cratePlacements}
                             ${connections}
                             ${crateTilePredicates}
+                            ${alignedPredicates}
                             ${emptyTiles}
                         )
                         ; PDDL löser hur agenten ska nå målet, oavsett hur många lådor som står i vägen!
@@ -94,8 +110,10 @@ export async function planCrateMovement(goalPos) {
     // 9. Skicka till solver och returnera sekvensen av actions
     try {
         //console.log(`[PDDL] Planning route to (${goalPos.x}, ${goalPos.y})...`);
-        const plan = await onlineSolver(domain, problem,  { verbose: false });
-        return plan; 
+        console.log(`[PDDL] me=(${me.x},${me.y}) goal=(${goalX},${goalY}) crates=${crates.size} crateTiles=${crateTiles.size}`);
+        const plan = await onlineSolver(domain, problem, { verbose: false });
+        console.log(`[PDDL] plan=${plan ? plan.length + ' steps, first=' + JSON.stringify(plan[0]?.action || plan[0]) : 'NULL'}`);
+        return plan;
     } catch (error) {
         //console.error("[PDDL] Solver failed or found no solution:", error);
         return null;

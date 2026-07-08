@@ -13,6 +13,7 @@ Checkout https://github.com/AI-Planning/planning-as-a-service to install a local
 // To do this we have to translate the belifes to pddl, so that we can use them in the planner
 
 export const me = { id: '', name: '', x: -1, y: -1, score: 0 };
+export const config = { observationDistance: Infinity }; // updated once config arrives
 
 export function initMe(socket) {
     socket.onYou(({ id, name, x, y, score }) => {
@@ -21,5 +22,9 @@ export function initMe(socket) {
         me.x = (x !== undefined) ? x : me.x;
         me.y = (y !== undefined) ? y : me.y;
         me.score = score;
+    });
+    socket.onConfig((cfg) => {
+        if (cfg && cfg.OBSERVATION_DISTANCE != null)
+            config.observationDistance = cfg.OBSERVATION_DISTANCE;
     });
 }

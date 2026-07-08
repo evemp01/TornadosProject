@@ -5,6 +5,7 @@ export const blackTiles = [];
 export const whiteTiles = [];
 export const directionalTiles = new Map(); // key: `${x},${y}` → direction
 export const crateTiles = new Map();
+export const initialCratePositions = [];
 export let mapWidth = 0;
 export let mapHeight = 0;
 
@@ -27,6 +28,7 @@ export function initMap(socket) {
             else if (tile.type == 5 || tile.type == '5!') {
                 grid.set(`${tile.x},${tile.y}`, 5);
                 crateTiles.set(`${tile.x},${tile.y}`, { x: tile.x, y: tile.y });
+                if (tile.type == '5!') initialCratePositions.push({ x: tile.x, y: tile.y });
             }
         }
     });
