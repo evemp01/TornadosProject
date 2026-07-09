@@ -54,7 +54,7 @@ socket.onMsg(async (id, name, msg) => {
     //if (name == 'admin') {
     //    pushEvent('chatMsg', msg);
     //}
-    pushEvent('chatMsg', msg);
+    pushEvent('chatMsg', { id, name, msg });
 });
 
 setInterval(() => {

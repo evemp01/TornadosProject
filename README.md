@@ -205,7 +205,6 @@ TODO level 1:
 - (dropp final answere for LLMen)
 - legg til at den ikke får 2000 for messages men sum som er basert på meldingen
 - mission: drop a package at leftmost tile
-- calculate + andre spørsmål: svar i chatten : (5*(5+3)/2)+2
 - add: do not go to
 - do not give parcel at ...
 - fix: Du har dobbel logging (samme event to ganger)

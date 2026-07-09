@@ -128,7 +128,7 @@ async function LLMaddMission(type, params, reward = 0) {
   addMission(mission.type, mission.params, mission.reward);
 
   missionAdded.emit("newMission");
-
+  commandExecuted = true;
   return "Mission added";
 }
 
@@ -137,8 +137,18 @@ async function LLMaddMission(type, params, reward = 0) {
 //}
 
 //types: 'number', 
-async function answereInChat(type, msg) {
-  sendMessageToSocket(type, msg);
+async function answereInChat(actionInput) {
+  let parsed;
+  try {
+    parsed = typeof actionInput === "string" ? JSON.parse(actionInput) : actionInput;
+  } catch (error) {
+    return `Error parsing answere_in_chat input: ${error.message}`;
+  }
+  if (!currentSenderId) {
+    return "Error: no chat sender to reply to.";
+  }
+  sendMessageToSocket(currentSenderId, String(parsed.message));
+  chatReplySent = true;
   return 'Message sent to chat';
 }
 
@@ -309,11 +319,26 @@ const messages = [
   },
 ];
 
+// Id of the agent whose chat message is currently being handled, so that
+// answere_in_chat knows who to reply to. Safe as module state because the
+// event queue processes chat messages one at a time (see eventQueue.js).
+let currentSenderId = null;
+// Whether answere_in_chat already sent a reply during the current turn, so
+// the Final Answer isn't also echoed to chat as a duplicate message.
+let chatReplySent = false;
+// Whether a command tool (e.g. adding a mission) ran during the current
+// turn. Commands like "go to 5,6" or "don't go to 6,8" are instructions,
+// not questions, so their Final Answer should not be echoed to chat.
+let commandExecuted = false;
+
 // ==========================================
 // 8. Agent loop for one user request
 // ==========================================
 
-async function runAgentTurn(userInput, maxIterations = 12) {
+async function runAgentTurn(userInput, senderId, maxIterations = 12) {
+  currentSenderId = senderId;
+  chatReplySent = false;
+  commandExecuted = false;
   const turnMessages = [
     {
       role: "system",
@@ -392,6 +417,9 @@ async function runAgentTurn(userInput, maxIterations = 12) {
 
     if (finalAnswer) {
       console.log(`Assistant: ${finalAnswer}\n`);
+      if (!chatReplySent && !commandExecuted && currentSenderId) {
+        sendMessageToSocket(currentSenderId, finalAnswer);
+      }
 
       messages.push({
         role: "user",
@@ -421,6 +449,9 @@ async function runAgentTurn(userInput, maxIterations = 12) {
     "I could not complete the request within the maximum number of iterations.";
 
   console.log(`Assistant: ${fallbackAnswer}\n`);
+  if (!chatReplySent && !commandExecuted && currentSenderId) {
+    sendMessageToSocket(currentSenderId, fallbackAnswer);
+  }
 
   messages.push({
     role: "user",

@@ -9,9 +9,10 @@ export function getSocket() {
     return socket;
 }
 
-export function sendMessageToSocket(msg) {
+export function sendMessageToSocket(toId, msg) {
+    if (!toId) return;
     if (!msg) return;
     if (!socket) return;
-    socket.emitSay(msg);
-    console.log("Sent message to socket:", msg);
+    socket.emitSay(toId, msg);
+    console.log(`Sent message to socket (to ${toId}):`, msg);
 }

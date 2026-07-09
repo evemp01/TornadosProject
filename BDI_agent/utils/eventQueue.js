@@ -20,8 +20,8 @@ async function processQueue() {
         // 1. chat ALWAYS first
         while (chatQueue.length > 0) {
 
-            const msg = chatQueue.shift();
-            const response = await llmAgent.run(msg);
+            const { id, msg } = chatQueue.shift();
+            const response = await llmAgent.run(msg, id);
 
             if (response) {
                 const socket = getSocket();
