@@ -6,17 +6,17 @@ import { missions } from "../beliefs/missions.js";
 
 export function optionsGeneration(myAgent) {
 
-    // Pusha deliver om du bär något
+    // Pusha deliver if carrying parcels
     const carrying = Array.from(parcels.values()).filter(p => p.carriedBy === me.id);
     if (carrying.length > 0)
         myAgent.push(['go_deliver']);
 
-    // Pusha alla synliga paket
+    // Push go_pick_up for all visible parcels
     for (const parcel of parcels.values())
         if (!parcel.carriedBy)
             myAgent.push(['go_pick_up', parcel.x, parcel.y, parcel.id]);
 
-    // Pusha fallbacks
+    // Push fallbacks
     if (spawnTiles.length > 0)
         myAgent.push(['go_spawn']);
 

@@ -206,7 +206,11 @@ export class Navigate extends PlanBase {
                         me.y = retry.y;
                         continue;
                     }
-                    throw 'stuck';
+                    // Still blocked: treat the agent as an obstacle and re-route with A*.
+                    // A* now excludes agent tiles, so this finds a detour if one exists.
+                    if (this.stopped) throw ['stopped'];
+                    this.log('Agent blocking at', step, '- replanning A* around it');
+                    return await this.subIntention(['go_to', x, y]);
                 }
 
                 this.log('Move failed at', step);

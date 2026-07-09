@@ -62,7 +62,7 @@ export function astar(start, goal) {
           };
           if (!allowed[forcedDirection]) continue; // skip this neighbour
       }
-      if (!visited.has(`${n.x},${n.y}`) && isWalkable(n.x, n.y) && !cratePositions.has(`${n.x},${n.y}`)) {
+      if (!visited.has(`${n.x},${n.y}`) && isWalkable(n.x, n.y) && !cratePositions.has(`${n.x},${n.y}`) && !agentPositions.has(`${n.x},${n.y}`)) {
         openList.push({ ...n, g: current.g + 1, parent: current });
       }
     }
