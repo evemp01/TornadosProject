@@ -12,6 +12,19 @@ export const constraints = [];
 
 let nextConstraintId = 1;
 
+// Chat-tunable cap on how many parcels the agent picks up before it must
+// deliver. Separate from `constraints` since it's a single setting, not an
+// accumulating list of tile-specific rules.
+let maxCarry = 5;
+
+export function setMaxCarry(n) {
+    maxCarry = n;
+}
+
+export function getMaxCarry() {
+    return maxCarry;
+}
+
 export function addConstraint(type, params = {}) {
     const constraint = {
         id: nextConstraintId++,

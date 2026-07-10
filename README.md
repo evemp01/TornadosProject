@@ -162,9 +162,7 @@ TODO level 1:
 - comunication between agents
 
 TODO level 2:
-- LLM endrer reward / endrer map
-exs: everytime you go through this point you ...¨
-exs: deliver exactly 3 parcel at a time to ...
+- LLM endrer reward / endrer map (?)
 - deliver parcels with score less than ..
 - tool: RED LIGHT! Stop moving until the next green light!
 

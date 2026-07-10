@@ -5,8 +5,8 @@ import { addMission} from "./BDI_agent/beliefs/missions.js";
 import { missionAdded } from "./BDI_agent/utils/events.js";
 import { me } from "./BDI_agent/beliefs/me.js";
 import { sendMessageToSocket } from "./BDI_agent/utils/socketManager.js";
-import { addConstraint } from "./BDI_agent/beliefs/constraints.js";
 import { deliveryTiles } from "./BDI_agent/beliefs/map.js";
+import { addConstraint, setMaxCarry } from "./BDI_agent/beliefs/constraints.js";
 
 //kode inspired form 09_08B-planner-execution-loop_DeliverooJS_EXTRA.js i think
 
@@ -246,6 +246,25 @@ async function deliverAt(actionInput) {
   return `Deliveries will now prefer the ${location} delivery tile, at (${tile.x}, ${tile.y}).`;
 }
 
+async function setMaxCarryTool(actionInput) {
+  let params;
+  try {
+    params = typeof actionInput === "string" ? JSON.parse(actionInput) : actionInput;
+  } catch (error) {
+    return `Error parsing set_max_carry input: ${error.message}`;
+  }
+
+  const { count } = params;
+
+  if (typeof count !== "number" || !Number.isInteger(count) || count < 1) {
+    return "Error: count must be a positive integer.";
+  }
+
+  setMaxCarry(count);
+  commandExecuted = true;
+  return `The agent will now carry at most ${count} parcel(s) before delivering.`;
+}
+
 //tool-name, java function
 const TOOLS = {
   calculate,
@@ -257,6 +276,7 @@ const TOOLS = {
   no_deliver_at: noDeliverAt,
   deliver_at: deliverAt,
   answere_in_chat: answereInChat,
+  set_max_carry: setMaxCarryTool,
 };
 
 // ==========================================
@@ -334,6 +354,7 @@ TOOLS
 - no_deliver_at(x, y): marks a tile where the agent must never deliver (it may still pass through or pick up there).
 - deliver_at(location): sets a preferred delivery tile by relative position — location is "leftmost" or "rightmost".
 - answere_in_chat(type, message): sends a reply directly to the user who triggered the request, instead of (or in addition to) a Final Answer.
+- set_max_carry(count): sets the maximum number of parcels the agent will pick up before it must go deliver.
 
 ===========================================================
 OUTPUT FORMAT — choose exactly one per message
@@ -378,6 +399,7 @@ WHEN TO USE EACH TOOL
 - "do not give/deliver/drop a parcel at X,Y" → call no_deliver_at. This is narrower than avoid_tile: the agent may still travel through or pick up at that tile, it just won't deliver there.
 - "drop/deliver a parcel at the leftmost/rightmost tile" → call deliver_at with that relative location.
 - Sending a reply to the game chat → call answere_in_chat.
+- "deliver exactly/only/at most N parcels at a time", "carry at most N parcels" → call set_max_carry with that count.
 
 ===========================================================
 LLM_add_mission
@@ -402,6 +424,14 @@ deliver_at
 - Action Input MUST be valid JSON: {"location":"leftmost"} or {"location":"rightmost"}
 - location must be exactly "leftmost" or "rightmost" — no other values.
 - This is a command, not a question: call it as an Action, wait for its Observation, and only then give a Final Answer confirming the preferred delivery tile.
+
+===========================================================
+set_max_carry
+===========================================================
+- Action Input MUST be valid JSON: {"count":3}
+- count must be a positive integer.
+- This is a command, not a question: call it as an Action, wait for its Observation, and only then give a Final Answer confirming the new limit.
+
 ===========================================================
 answere_in_chat
 ===========================================================
