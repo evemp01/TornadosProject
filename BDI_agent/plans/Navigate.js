@@ -210,8 +210,14 @@ export class Navigate extends PlanBase {
                     // Still blocked: treat the agent as an obstacle and re-route with A*.
                     // A* now excludes agent tiles, so this finds a detour if one exists.
                     if (this.stopped) throw ['stopped'];
-                    this.log('Agent blocking at', step, '- replanning A* around it');
-                    return await this.subIntention(['go_to', x, y]);
+
+                    if (rerouteAttemptsLeft <= 0) {
+                        this.log('Move blocked at', step, '- out of reroute attempts.');
+                        throw 'stuck';
+                    }
+
+                    this.log('Move blocked at', step, '- replanning A* around it');
+                    return await this.subIntention(['go_to', x, y, rerouteAttemptsLeft - 1]);
                 }
 
                 // Not a crate — almost certainly another agent (ours, a rival, or

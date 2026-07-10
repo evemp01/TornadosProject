@@ -13,17 +13,33 @@ export class GoToMission extends PlanBase {
             `Starting mission: go to (${x}, ${y}) for reward ${reward}`
         );
 
-        try {
-            // Delegate the actual walk to Navigate, same as GoPickUp/GoDeliver/
-            // GoToSpawn — it already knows how to retry a blocked-by-agent step,
-            // reroute around crates via PDDL, and retry a timed-out move.
-            await this.subIntention(['go_to', x, y]);
-        } catch (error) {
-            // Preempted by a higher-priority intention: leave it un-done so it
-            // can resume later, instead of giving up on the mission entirely.
-            const wasStopped = this.stopped || (Array.isArray(error) && error[0] === 'stopped');
-            if (!wasStopped) completeMission(missionId);
-            throw error;
+        // Missions are prioritized over pickups/deliveries, so keep retrying the
+        // whole walk on any transient failure (a stubborn block, a move timeout)
+        // instead of giving up after one attempt. Only a genuine 'no_path' (the
+        // destination is provably unreachable) or being preempted ends the loop.
+        while (true) {
+            try {
+                await this.subIntention(['go_to', x, y]);
+                break;
+            } catch (error) {
+                const wasStopped = this.stopped || (Array.isArray(error) && error[0] === 'stopped');
+
+                if (wasStopped) {
+                    // Preempted by a higher-priority intention: leave it un-done so
+                    // it resumes (and keeps retrying) once it's pushed again.
+                    throw error;
+                }
+
+                if (error === 'no_path') {
+                    this.log(`No path exists to (${x}, ${y}) — giving up on this mission.`);
+                    completeMission(missionId);
+                    throw error;
+                }
+
+                this.log(`Mission to (${x}, ${y}) hit "${error}" — retrying.`);
+                await new Promise(res => setTimeout(res, 200));
+                if (this.stopped) throw ['stopped'];
+            }
         }
 
         this.log(
