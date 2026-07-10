@@ -187,3 +187,9 @@ TEST:
 10. deliver parcels at the rightmost tile
 11. do not go to 11,9
 12. what are your current coordinates and score?
+
+
+TODO:
+lage redme
+lage rapport
+fikse to samtidig

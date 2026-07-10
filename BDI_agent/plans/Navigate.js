@@ -251,6 +251,11 @@ export class Navigate extends PlanBase {
             );
             if (onTile) {
                 await socket.emitPickup();
+                const pickedUp = await socket.emitPickup();
+                for (const p of pickedUp ?? []) {
+                    const belief = parcels.get(p.id);
+                    if (belief) belief.carriedBy = me.id;
+                }
             }
         }
 
