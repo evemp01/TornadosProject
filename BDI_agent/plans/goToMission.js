@@ -1,51 +1,36 @@
 import { PlanBase } from "./PlanBase.js";
-import { me } from "../beliefs/me.js";
-import { socket } from "../../main_BDI.js";
-import { astar } from "../utils/astar.js";
+import { completeMission } from "../beliefs/missions.js";
 
 export class GoToMission extends PlanBase {
 
-    static isApplicableTo(action, x, y, reward) {
+    static isApplicableTo(action, x, y, reward, missionId) {
         return action === 'go_to_mission';
     }
 
-    async execute(action, x, y, reward) {
+    async execute(action, x, y, reward, missionId) {
 
         this.log(
             `Starting mission: go to (${x}, ${y}) for reward ${reward}`
         );
 
-        const path = astar({ x: me.x, y: me.y },{ x, y });
-
-        if (!path) {
-            this.log('No path found to', x, y);
-            throw 'no_path';
-        }
-
-        for (const step of path.slice(1)) {
-            if (this.stopped)throw ['stopped'];
-
-            let direction;
-
-            if (step.x > me.x)direction = 'right';
-            else if (step.x < me.x)direction = 'left';
-            else if (step.y > me.y)direction = 'up';
-            else if (step.y < me.y)direction = 'down';
-
-            const moved = await socket.emitMove(direction);
-
-            if (!moved) {
-                this.log('Move failed at', step);
-                throw 'stuck';
-            }
-
-            me.x = moved.x;
-            me.y = moved.y;
+        try {
+            // Delegate the actual walk to Navigate, same as GoPickUp/GoDeliver/
+            // GoToSpawn — it already knows how to retry a blocked-by-agent step,
+            // reroute around crates via PDDL, and retry a timed-out move.
+            await this.subIntention(['go_to', x, y]);
+        } catch (error) {
+            // Preempted by a higher-priority intention: leave it un-done so it
+            // can resume later, instead of giving up on the mission entirely.
+            const wasStopped = this.stopped || (Array.isArray(error) && error[0] === 'stopped');
+            if (!wasStopped) completeMission(missionId);
+            throw error;
         }
 
         this.log(
             `Mission completed: reached (${x}, ${y})`
         );
+
+        completeMission(missionId);
 
         return {
             success: true,

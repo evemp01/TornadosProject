@@ -6,6 +6,7 @@ import { parcels } from "../beliefs/parcels.js";
 import { socket } from "../../main_BDI.js";
 import { astar } from "../utils/astar.js";
 import { planCrateMovement } from "../pddl/problemGenerator.js";
+import { moveWithRetry } from "../utils/socketManager.js";
 
 export class Navigate extends PlanBase {
 
@@ -64,13 +65,13 @@ export class Navigate extends PlanBase {
 
             this.log(`Executing PDDL step (${nextStep.action}): ${direction} towards ${targetTileName}`);
 
-            let moved = await socket.emitMove(direction);
+            let moved = await moveWithRetry(socket, direction)
 
             // One transient retry: a momentary agent collision shouldn't blacklist
             // a walkable tile and trigger the whole replan cascade.
             if (!moved) {
                 await new Promise(res => setTimeout(res, 60));
-                moved = await socket.emitMove(direction);
+                moved = await moveWithRetry(socket, direction)
             }
 
             if (!moved) {
@@ -130,7 +131,7 @@ export class Navigate extends PlanBase {
                     else if (step.x < mx) direction = 'left';
                     else if (step.y > my) direction = 'up';
                     else if (step.y < my) direction = 'down';
-                    const moved = await socket.emitMove(direction);
+                    const moved = await moveWithRetry(socket, direction);
                     if (!moved) break;
                     me.x = moved.x;
                     me.y = moved.y;
@@ -179,7 +180,7 @@ export class Navigate extends PlanBase {
             else if (step.y > my) direction = 'up';
             else if (step.y < my) direction = 'down';
 
-            const moved = await socket.emitMove(direction);
+            const moved = await moveWithRetry(socket, direction);
 
             if (!moved) {
                 // Check if a crate appeared and is blocking this step
@@ -200,7 +201,7 @@ export class Navigate extends PlanBase {
 
                 if (blocker) {
                     await new Promise(res => setTimeout(res, 50));
-                    const retry = await socket.emitMove(direction);
+                    const retry = await moveWithRetry(socket, direction);
                     if (retry) {
                         me.x = retry.x;
                         me.y = retry.y;
@@ -213,8 +214,24 @@ export class Navigate extends PlanBase {
                     return await this.subIntention(['go_to', x, y]);
                 }
 
-                this.log('Move failed at', step);
-                throw 'stuck';
+                // Not a crate — almost certainly another agent (ours, a rival, or
+                // this map's NPC) contesting the same tile, which is common on this
+                // map's narrow single-tile corridors. Checking our own belief map
+                // for a specific blocker is unreliable (it's only as fresh as the
+                // last sensing update, and the blocker has often already moved on),
+                // so just retry, then reroute around it: A* excludes currently
+                // occupied tiles, so a fresh replan can find a detour if one exists.
+                await new Promise(res => setTimeout(res, 50));
+                const retry = await moveWithRetry(socket, direction);
+                if (retry) {
+                    me.x = retry.x;
+                    me.y = retry.y;
+                    continue;
+                }
+
+                if (this.stopped) throw ['stopped'];
+                this.log('Move blocked at', step, '- replanning A* around it');
+                return await this.subIntention(['go_to', x, y]);
             }
 
             me.x = moved.x;

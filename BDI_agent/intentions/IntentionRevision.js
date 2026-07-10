@@ -57,7 +57,7 @@ export class IntentionRevision {
 
     /** @type { function(...any): void } */
     log ( ...args ) {
-        //console.log( ...args )
+        console.log( ...args )
     }
 
     /**

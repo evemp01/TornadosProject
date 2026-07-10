@@ -260,7 +260,8 @@ Final Answer: <clear final answer for the user>
 
 REWARD CALCULATION RULES:
 - The reward must be a positive integer.
-- Allways sett the rewards to 2000 for go_to_mission missions
+- For go_to_mission, use the reward/points number the user mentioned in their request.
+- If the user did not mention a number, default the reward to 2000 for go_to_mission missions.
 
 MISSION TYPES for LLM_add_mission: 
 - go_to_mission: Move the agent to a specified location.

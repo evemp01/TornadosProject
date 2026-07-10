@@ -16,3 +16,13 @@ export function sendMessageToSocket(toId, msg) {
     socket.emitSay(toId, msg);
     console.log(`Sent message to socket (to ${toId}):`, msg);
 }
+
+export async function moveWithRetry(targetSocket, direction, retries = 2) {
+    for (let attempt = 0; ; attempt++) {
+        try {
+            return await targetSocket.emitMove(direction);
+        } catch (error) {
+            if (attempt >= retries) throw error;
+        }
+    }
+}
