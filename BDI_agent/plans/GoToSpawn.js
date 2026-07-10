@@ -11,11 +11,10 @@ const POLL_MS = 200;
 let relocateFar = false;
 
 function pickSpawn(preferFar) {
-    // console.log('config keys:', Object.keys(config), 'obsDist:', config.observationDistance);
-    let pool = spawnTiles;
+    let pool = spawnTiles.filter(t => !isTileAvoided(t.x, t.y));
 
     if (preferFar) {
-        const far = spawnTiles.filter(t => distance(t, me) > config.observationDistance);
+        const far = pool.filter(t => distance(t, me) > config.observationDistance);
         if (far.length > 0) pool = far;
     }
 
@@ -38,17 +37,6 @@ export class GoToSpawn extends PlanBase {
     }
 
     async execute(go_spawn) {
-        // Find nearest spawn tile that isn't avoided
-        let nearest = Number.MAX_VALUE;
-        let target;
-        for (const tile of spawnTiles) {
-            if (isTileAvoided(tile.x, tile.y)) continue;
-            const d = distance(tile, me);
-            if (d < nearest) {
-                nearest = d;
-                target = tile;
-            }
-        }
         const target = pickSpawn(relocateFar);
         relocateFar = false;
 
