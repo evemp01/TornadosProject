@@ -7,6 +7,14 @@ import { me } from "./BDI_agent/beliefs/me.js";
 import { sendMessageToSocket } from "./BDI_agent/utils/socketManager.js";
 import { deliveryTiles } from "./BDI_agent/beliefs/map.js";
 import { addConstraint, setMaxCarry } from "./BDI_agent/beliefs/constraints.js";
+import { distance } from "./BDI_agent/utils/distance.js";
+
+// Fixed two-agent setup: tornado10 is always the master, tornado11 the slave.
+const MASTER_ID = '894484';
+const SLAVE_ID = 'b3c047';
+// How far (in tiles) the master must be from a task's target before it
+// delegates that task to the slave instead of doing it itself. Tune as needed.
+const DELEGATION_DISTANCE_THRESHOLD = 15;
 
 //kode inspired form 09_08B-planner-execution-loop_DeliverooJS_EXTRA.js i think
 
@@ -127,6 +135,12 @@ async function LLMaddMission(type, params, reward = 0) {
     }
   } catch (e) {return `Error parsing mission: ${e.message}`;}
 
+  if (isMasterRole && mission.params && isFarFromMe(mission.params.x, mission.params.y)) {
+    relayToSlave();
+    commandExecuted = true;
+    return `Too far from (${mission.params.x}, ${mission.params.y}) — delegated to the other agent.`;
+  }
+
   addMission(mission.type, mission.params, mission.reward);
 
   missionAdded.emit("newMission");
@@ -150,6 +164,7 @@ async function avoidTile(actionInput) {
   }
 
   addConstraint('avoid_tile', { x, y });
+  relayToSlave();
 
   commandExecuted = true;
 
@@ -188,6 +203,7 @@ async function noPickupAt(actionInput) {
   }
 
   addConstraint('no_pickup_at', { x, y });
+  relayToSlave();
 
   commandExecuted = true;
 
@@ -210,6 +226,7 @@ async function noDeliverAt(actionInput) {
   }
 
   addConstraint('no_deliver_at', { x, y });
+  relayToSlave();
 
   commandExecuted = true;
 
@@ -238,6 +255,12 @@ async function deliverAt(actionInput) {
   const tile = location === "leftmost"
     ? deliveryTiles.reduce((a, b) => (b.x < a.x ? b : a))
     : deliveryTiles.reduce((a, b) => (b.x > a.x ? b : a));
+
+  if (isMasterRole && isFarFromMe(tile.x, tile.y)) {
+    relayToSlave();
+    commandExecuted = true;
+    return `Too far from the ${location} delivery tile (${tile.x}, ${tile.y}) — delegated to the other agent.`;
+  }
 
   addConstraint('prefer_deliver_at', { x: tile.x, y: tile.y });
 
@@ -465,6 +488,18 @@ let chatReplySent = false;
 // turn. Commands like "go to 5,6" or "don't go to 6,8" are instructions,
 // not questions, so their Final Answer should not be echoed to chat.
 let commandExecuted = false;
+let currentUserInput = null;
+let isMasterRole = false;
+
+function relayToSlave() {
+  if (!isMasterRole || !currentUserInput) return;
+  sendMessageToSocket(SLAVE_ID, currentUserInput);
+}
+
+function isFarFromMe(x, y) {
+  if (typeof x !== "number" || typeof y !== "number") return false;
+  return distance(me, { x, y }) > DELEGATION_DISTANCE_THRESHOLD;
+}
 
 // ==========================================
 // 8. Agent loop for one user request
@@ -472,6 +507,7 @@ let commandExecuted = false;
 
 async function runAgentTurn(userInput, senderId, maxIterations = 12) {
   currentSenderId = senderId;
+  currentUserInput = userInput;
   chatReplySent = false;
   commandExecuted = false;
   const turnMessages = [
@@ -605,11 +641,11 @@ async function runAgentTurn(userInput, senderId, maxIterations = 12) {
 // 9. Agent wrapper / DeliverooJS chat listener
 // ==========================================
 
-export function createLLMAgent() {
+export function createLLMAgent(isMaster = false) {
   console.log("Creating LLM agent...");
+  isMasterRole = isMaster;
 
   return {
-    run: runAgentTurn // renaming
+    run: runAgentTurn
   };
-  
 }

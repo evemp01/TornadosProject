@@ -52,7 +52,7 @@ setSocket(socket);
 //LLM Agent Initialization
 //-----------------------------------------------------------------
 
-export const llmAgent = createLLMAgent(); 
+export const llmAgent = createLLMAgent(isMaster);
 setLLMAgent(llmAgent);
 
 missionAdded.on("newMission", () => {optionsGeneration(bdiAgent);});
