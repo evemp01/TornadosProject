@@ -3,6 +3,7 @@ import { me } from "../beliefs/me.js";
 import { distance } from "../utils/distance.js";
 import { deliveryTiles, spawnTiles } from "../beliefs/map.js";
 import { missions } from "../beliefs/missions.js";
+import { isTileAvoided } from "../beliefs/constraints.js";
 
 export function optionsGeneration(myAgent) {
 
@@ -11,9 +12,10 @@ export function optionsGeneration(myAgent) {
     if (carrying.length > 0)
         myAgent.push(['go_deliver']);
 
-    // Push go_pick_up for all visible parcels
+    // Push go_pick_up for all visible parcels not sitting on an avoided (and
+    // therefore unreachable) tile
     for (const parcel of parcels.values())
-        if (!parcel.carriedBy)
+        if (!parcel.carriedBy && !isTileAvoided(parcel.x, parcel.y))
             myAgent.push(['go_pick_up', parcel.x, parcel.y, parcel.id]);
 
     // Push fallbacks

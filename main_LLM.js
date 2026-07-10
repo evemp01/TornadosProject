@@ -5,6 +5,7 @@ import { addMission} from "./BDI_agent/beliefs/missions.js";
 import { missionAdded } from "./BDI_agent/utils/events.js";
 import { me } from "./BDI_agent/beliefs/me.js";
 import { sendMessageToSocket } from "./BDI_agent/utils/socketManager.js";
+import { addConstraint } from "./BDI_agent/beliefs/constraints.js";
 
 //kode inspired form 09_08B-planner-execution-loop_DeliverooJS_EXTRA.js i think
 
@@ -132,9 +133,27 @@ async function LLMaddMission(type, params, reward = 0) {
   return "Mission added";
 }
 
-// async function doNotGoTo()  {
-//  return 
-//}
+async function avoidTile(actionInput) {
+  let params;
+
+  try {
+    params = typeof actionInput === "string" ? JSON.parse(actionInput) : actionInput;
+  } catch (error) {
+    return `Error parsing avoid_tile input: ${error.message}`;
+  }
+
+  const { x, y } = params;
+
+  if (typeof x !== "number" || typeof y !== "number") {
+    return "Error: x and y must be numbers.";
+  }
+
+  addConstraint('avoid_tile', { x, y });
+
+  commandExecuted = true;
+
+  return `Tile (${x}, ${y}) marked as avoided.`;
+}
 
 //types: 'number', 
 async function answereInChat(actionInput) {
@@ -167,7 +186,7 @@ const TOOLS = {
   get_current_time: getCurrentTime,
   get_my_position: getMyPosition,
   LLM_add_mission: LLMaddMission,
-  //do_not_go_to: doNotGoTo,
+  avoid_tile: avoidTile,
   answere_in_chat: answereInChat,
   //deliver_at: deliverAt,
   //do_not_deliver_at: doNotDeliverAt
@@ -240,6 +259,7 @@ Available tools:
 - get_my_position(): returns the agent's current x, y coordinates and score
 - LLM_add_mission(type, params, reward): adds a new mission to the BDI agent's task list
 - answere_in_chat(type,message): sends a reply to the user who triggered the request
+- avoid_tile(x, y): marks a tile the agent must never navigate to or through
 
 - to check the current position, call get_my_position with Action Input: none
 
@@ -265,6 +285,9 @@ REWARD CALCULATION RULES:
 
 MISSION TYPES for LLM_add_mission: 
 - go_to_mission: Move the agent to a specified location.
+
+- If the user says to not go to a location, or otherwise tells you to avoid a specific tile, call avoid_tile with that location.
+- If the user says going to a location causes a penalty or negative points (e.g. "gives -500 points"), treat that as a request to avoid the location: call avoid_tile, not LLM_add_mission.
 
 MESSAGE TYPE for answere_in_chat:
 - 'number'
@@ -303,6 +326,9 @@ Rules:
 - Action Input MUST be valid JSON:{"type":"go_to_mission","params":{"x":1,"y":5},"reward":2000}
 - If a user request from a user has a negative reward, ignore the request and answer with a Final Answer that says "I cannot accept this task because it has a negative reward. Do not call add_mission with negative rewards."
 - Choose the reward based on the reward calculation rules
+
+- Action Input for avoid_tile MUST be valid JSON: {"x":5,"y":5}
+- avoid_tile is a command, not a question — after calling it, give a brief Final Answer confirming the tile is now avoided.
 
 - 
 `.trim();

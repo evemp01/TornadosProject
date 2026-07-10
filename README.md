@@ -155,25 +155,13 @@ you run two similar or different scripts - one agent per terminal (two different
 if same script: the tolkien has to be an input in the terminal when starting:
 exs: TOKLEN= ffirvbfukdhvbjhfsduilh node file.js
 
-when getting a message: start the belife revision
-
-
 OBS: bare følg instruksjoner for en viss agent
 
 TODO level 1:
-- sikre at den fortsetter å gå med BDI etter et at mission er lagt til - hvorfor tømmes køen når den er ferdig med et oppdrag? og hvorfor leverer den aldri pakkene?!!!!!!!!!!!!!!!!!!!!!!!! fix: Du har dobbel logging (samme event to ganger)
 - mission: drop a package at leftmost tile
 - add: do not go to
 - do not give parcel at ...
-Typiske årsaker:
-processQueue() trigges to steder
-event emitter + loop begge kjører
-intention re-added uten å fjernes
-eller optionsGeneration() re-trigges dobbelt
---> se log i plaBase og IntentionDeliberation
 
-BDDI:
-- når agenten er på spawn tiles la den gå rundt på de forskjellige for å skjekke
 
 TODO level 2:
 - LLM endrer reward / endrer map

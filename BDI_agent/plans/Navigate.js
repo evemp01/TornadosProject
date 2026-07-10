@@ -151,7 +151,7 @@ export class Navigate extends PlanBase {
         throw 'no_path';
     }
 
-    async execute(go_to, x, y) {
+    async execute(go_to, x, y, rerouteAttemptsLeft = 5) {
 
         const path = astar(
             { x: Math.round(me.x), y: Math.round(me.y) },

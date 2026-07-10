@@ -3,6 +3,7 @@ import { me } from "../beliefs/me.js";
 import { deliveryTiles } from "../beliefs/map.js";
 import { distance } from "../utils/distance.js";
 import { socket } from "../../main_BDI.js";
+import { isTileAvoided } from "../beliefs/constraints.js";
 
 export class GoDeliver extends PlanBase {
 
@@ -11,10 +12,11 @@ export class GoDeliver extends PlanBase {
     }
 
     async execute(go_deliver) {
-        // Find nearest delivery tile
+        // Find nearest delivery tile that isn't avoided
         let nearest = Number.MAX_VALUE;
         let target;
         for (const tile of deliveryTiles) {
+            if (isTileAvoided(tile.x, tile.y)) continue;
             const d = distance(tile, me);
             if (d < nearest) {
                 nearest = d;

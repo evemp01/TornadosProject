@@ -3,6 +3,7 @@ import { agents } from '../beliefs/agents.js';
 import { crates } from '../beliefs/crates.js';
 import { me } from '../beliefs/me.js'; 
 import { distance } from './distance.js';
+import { isTileAvoided } from '../beliefs/constraints.js';
 
 export function astar(start, goal) {
   const openList = [];
@@ -62,7 +63,7 @@ export function astar(start, goal) {
           };
           if (!allowed[forcedDirection]) continue; // skip this neighbour
       }
-      if (!visited.has(`${n.x},${n.y}`) && isWalkable(n.x, n.y) && !cratePositions.has(`${n.x},${n.y}`) && !agentPositions.has(`${n.x},${n.y}`)) {
+      if (!visited.has(`${n.x},${n.y}`) && isWalkable(n.x, n.y) && !cratePositions.has(`${n.x},${n.y}`) && !agentPositions.has(`${n.x},${n.y}`) && !isTileAvoided(n.x, n.y)) {
         openList.push({ ...n, g: current.g + 1, parent: current });
       }
     }
