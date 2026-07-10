@@ -5,6 +5,8 @@ import { deliveryTiles, spawnTiles } from "../beliefs/map.js";
 import { missions } from "../beliefs/missions.js";
 import { isTileAvoided } from "../beliefs/constraints.js";
 
+const MAX_CARRY = 5;
+
 export function optionsGeneration(myAgent) {
 
     // Pusha deliver if carrying parcels
@@ -13,10 +15,11 @@ export function optionsGeneration(myAgent) {
         myAgent.push(['go_deliver']);
 
     // Push go_pick_up for all visible parcels not sitting on an avoided (and
-    // therefore unreachable) tile
-    for (const parcel of parcels.values())
-        if (!parcel.carriedBy && !isTileAvoided(parcel.x, parcel.y))
-            myAgent.push(['go_pick_up', parcel.x, parcel.y, parcel.id]);
+    // therefore unreachable) tile, unless we're already carrying the max
+    if (carrying.length < MAX_CARRY)
+        for (const parcel of parcels.values())
+            if (!parcel.carriedBy && !isTileAvoided(parcel.x, parcel.y))
+                myAgent.push(['go_pick_up', parcel.x, parcel.y, parcel.id]);
 
     // Push fallbacks
     if (spawnTiles.length > 0)

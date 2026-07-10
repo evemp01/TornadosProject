@@ -26,3 +26,19 @@ export async function moveWithRetry(targetSocket, direction, retries = 2) {
         }
     }
 }
+
+export async function putdownWithRetry(targetSocket, selected = [], retries = 2) {
+    for (let attempt = 0; ; attempt++) {
+        try {
+            const result = await targetSocket.emitPutdown(selected);
+            console.log(`[putdownWithRetry] emitPutdown resolved on attempt ${attempt + 1}:`, result);
+            return result;
+        } catch (error) {
+            console.log(`[putdownWithRetry] emitPutdown attempt ${attempt + 1} failed:`, error?.message || error);
+            if (attempt >= retries) {
+                console.log(`[putdownWithRetry] giving up after ${attempt + 1} attempts`);
+                throw error;
+            }
+        }
+    }
+}

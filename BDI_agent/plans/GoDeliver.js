@@ -5,6 +5,7 @@ import { deliveryTiles } from "../beliefs/map.js";
 import { distance } from "../utils/distance.js";
 import { socket } from "../../main_BDI.js";
 import { isTileAvoided } from "../beliefs/constraints.js";
+import { putdownWithRetry } from "../utils/socketManager.js";
 
 export class GoDeliver extends PlanBase {
 
@@ -13,11 +14,13 @@ export class GoDeliver extends PlanBase {
     }
 
     async execute(go_deliver) {
-        // Stop stale deliveries early so we dont walk across the map for nothing
-        if (!Array.from(parcels.values()).some(p => p.carriedBy === me.id))
-            throw ['nothing to deliver'];
+        console.log('[GoDeliver] execute() started');
 
-        // Find nearest delivery tile that isn't avoided
+        if (!Array.from(parcels.values()).some(p => p.carriedBy === me.id)) {
+            console.log('[GoDeliver] nothing to deliver, throwing early');
+            throw ['nothing to deliver'];
+        }
+
         let nearest = Number.MAX_VALUE;
         let target;
         for (const tile of deliveryTiles) {
@@ -28,16 +31,22 @@ export class GoDeliver extends PlanBase {
                 target = tile;
             }
         }
-        if (!target) throw ['no delivery tile found'];
+        if (!target) {
+            console.log('[GoDeliver] no delivery tile found, throwing');
+            throw ['no delivery tile found'];
+        }
 
+        console.log(`[GoDeliver] walking to delivery tile (${target.x},${target.y})`);
         await this.subIntention(['go_to', target.x, target.y]);
+        console.log(`[GoDeliver] arrived at (${target.x},${target.y}), attempting putdown`);
 
-        // Remove the parcels that are now delivered so there is now ghost deliveries
-        // Done before the await so no sensing tick can push a new go_deliver on stale beliefs
         const delivered = Array.from(parcels.values()).filter(p => p.carriedBy === me.id);
+        console.log(`[GoDeliver] about to put down ${delivered.length} parcel(s):`, delivered.map(p => p.id));
+
+        await putdownWithRetry(socket);
+
         for (const p of delivered) parcels.delete(p.id);
 
-        await socket.emitPutdown();
         console.log(`Delivered ${delivered.length} parcel(s) at tile: (${target.x},${target.y})`);
 
         return true;
