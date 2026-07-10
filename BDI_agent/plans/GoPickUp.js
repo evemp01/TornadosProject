@@ -22,6 +22,7 @@ export class GoPickUp extends PlanBase {
     async execute(go_pick_up, x, y) {
         await this.subIntention(['go_to', x, y]);
         await socket.emitPickup();
+        console.log(`Picked up parcel ${go_pick_up} at (${x},${y})`);
         return true;
     }
 }
