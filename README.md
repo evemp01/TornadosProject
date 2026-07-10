@@ -12,16 +12,18 @@ Create a `.env` file (never commit this — it's gitignored) with:
 
 ```
 DELIVEROOJS_URL=<server url>
-DELIVEROOJS_TOKEN=<your agent token>
+DELIVEROOJS_TOKEN=<master agent token>                # tornado10
+DELIVEROOJS_TOKEN2=<slave agent token>                # tornado11, only needed to run a slave
 LITELLM_BASE_URL=<LiteLLM-compatible endpoint>       # optional, has a default
 LITELLM_API_KEY=<api key for the LLM endpoint>        # required
 LOCAL_MODEL=<model name>                              # optional, has a default
 ```
 
-Run the agent:
+Run as a single agent, or as a coordinating master/slave pair (see [Multi-agent coordination](#multi-agent-coordination)) from two terminals:
 
 ```bash
-node main.js
+node main.js M   # master (tornado10) — takes commands from the admin
+node main.js S   # slave (tornado11) — takes commands only from the master
 ```
 
 `main.js` wires up both agents and connects to the server; `main_BDI.js` and `main_LLM.js` can also be read independently to understand each half.
@@ -94,9 +96,28 @@ A ReAct-style loop (`Thought` → `Action`/`Action Input` → `Observation`, or 
 
 Chat messages are processed one at a time via `eventQueue.js`, so tool calls always see consistent belief state, and `optionsGeneration` re-runs immediately after each message so a command (e.g. lowering the carry limit) takes effect without waiting for the next sensing tick.
 
+## Multi-agent coordination
+
+Two independent copies of this process can run side by side and coordinate purely through the game chat — there's no direct connection between them. The role is chosen at startup:
+
+```bash
+node main.js M   # master: connects with DELIVEROOJS_TOKEN (tornado10)
+node main.js S   # slave:  connects with DELIVEROOJS_TOKEN2 (tornado11)
+```
+
+This selects which token to connect with and filters which chat sender each process listens to (`main.js`): the master only reacts to messages from the `admin` account, and the slave only reacts to messages from the master (`tornado10`, id `894484`).
+
+The master's LLM tools (`main_LLM.js`) handle two kinds of chat commands differently:
+
+- **Universal restrictions** (`avoid_tile`, `no_pickup_at`, `no_deliver_at`) apply to the master's own belief as usual, and are also relayed verbatim to the slave, whose own LLM independently interprets and applies the same message.
+- **Exclusive one-off tasks** (`LLM_add_mission`, `deliver_at`) are only meant for one agent to do. Before executing, the master checks its own distance to the target: if it's farther away than a fixed threshold (`DELEGATION_DISTANCE_THRESHOLD`), it delegates the whole task by relaying the message to the slave instead of doing it itself; otherwise it just does the task as normal.
+
+This relay/delegate logic is built directly into the existing tool functions rather than exposed as a separate tool the LLM has to remember to call, so it adds no extra reasoning step to the master's loop. The slave never relays further, which avoids a ping-pong loop between the two agents.
+
 ## Known limitations
 
 - The DeliverooJS SDK's socket calls (`emitMove`, `emitPickup`, `emitPutdown`) have a hardcoded ~1s ack timeout; transient timeouts are retried (`BDI_agent/utils/socketManager.js`) but can still occasionally cause an intention to give up and get dropped.
 - The local LLM occasionally drifts from the required output format under load; the parser tolerates a missing `Action Input:` line, but a model that ignores the format entirely still falls back to a "could not complete" reply after exhausting its iteration budget.
 - Constraint-based capacity/tile rules only affect what gets *queued* going forward (and prune what's already queued) — they don't retroactively rewind an action that's already mid-flight when the rule is set.
-
+- Task delegation is one-sided: the master only checks its own distance to a task, without knowing where the slave actually is, so it can delegate to a slave that's even farther away. A mutual check (master asks the slave for its position first) would be more accurate, but adds an extra LLM round trip before a task can start — since the local model is already not always fast enough to register a restriction before the BDI loop acts on the old behavior, this was left as future work rather than implemented now.
+- There's no dedicated "stop" tool to halt an agent's current action outright; a running intention can only be superseded by a higher-utility one or a matching restriction, not paused directly.
