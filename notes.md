@@ -192,4 +192,4 @@ TEST:
 TODO:
 lage redme
 lage rapport
-fikse to samtidig
+fikse to samtidig: den ene spør om posisjonen til den andre og sammenlikner hvilken som er nermest

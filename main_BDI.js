@@ -10,11 +10,12 @@ import { planLibrary } from "./BDI_agent/plans/index.js";
 import { optionsGeneration } from "./BDI_agent/agent/optionsGeneration.js";
 import { pushEvent, setBDIAgent } from "./BDI_agent/utils/eventQueue.js";
 
-//obs goPickUp.js uses socket
+export let socket;
 
-export const socket = DjsConnect(process.env.DELIVEROOJS_URL, process.env.DELIVEROOJS_TOKEN);
+export function createBDI(token) {
+    socket = DjsConnect(process.env.DELIVEROOJS_URL, token);
 
-export function createBDI() {
+    initMe(socket);
     initMe(socket);
     initParcels(socket);
     initMap(socket);

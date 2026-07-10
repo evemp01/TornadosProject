@@ -15,26 +15,36 @@ import { setLLMAgent, setBDIAgent, pushEvent, running } from "./BDI_agent/utils/
 import { setSocket } from "./BDI_agent/utils/socketManager.js";
 
 
-//masterName2 = tornado2
-//masterID2 = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI4OTUzZCIsIm5hbWUiOiJ0b3JuYWRvMiIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzc5Nzg5NTE3fQ.izjRe6OVEEHpPKLNEMmQzaPvoNG1DPdLeN5pu1Zx5j4
-//masterName5 = tornado5
-//masterID5 = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZkZGUwZiIsIm5hbWUiOiJ0b3JuYWRvNSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzgwNDIzMzgwfQ.37l-r3mygPq_zr5kiC5ko75AiZgu6eEGd3RJXwj_cvM
+//-----------------------------------------------------------------
+// Role selection: `node main.js M` runs as master (tornado10), taking
+// commands only from the admin. `node main.js S` runs as slave (tornado11),
+// taking commands only from the master.
+//-----------------------------------------------------------------
 
-/*
-const masterName = process.argv[2];
-const DELIVEROOJS_TOKEN = process.argv[3];
-setTerminalToken(DELIVEROOJS_TOKEN);
+const MASTER_ID = '894484'; // tornado10, Tornados(8ed935)
 
-console.log(`Master name: ${masterName}`);
-console.log(`DeliverooJS Token: ${DELIVEROOJS_TOKEN}`);
-*/
+const roleArg = (process.argv[2] || '').toUpperCase();
+if (roleArg !== 'M' && roleArg !== 'S') {
+    console.error("Usage: node main.js <M|S>   (M = master/tornado10, S = slave/tornado11)");
+    process.exit(1);
+}
+
+const isMaster = roleArg === 'M';
+const token = isMaster ? process.env.DELIVEROOJS_TOKEN : process.env.DELIVEROOJS_TOKEN2;
+
+if (!token) {
+    console.error(`Missing ${isMaster ? 'DELIVEROOJS_TOKEN' : 'DELIVEROOJS_TOKEN2'} in .env`);
+    process.exit(1);
+}
+
+console.log(`Starting as ${isMaster ? 'MASTER (tornado10)' : 'SLAVE (tornado11)'}`);
 
 //-----------------------------------------------------------------
 //BDI Agent Initialization
 //-----------------------------------------------------------------
 
-const { socket, myAgent: bdiAgent } = createBDI(); // Initialize BDI agent and get socket reference
-setBDIAgent(bdiAgent); 
+const { socket, myAgent: bdiAgent } = createBDI(token); // Initialize BDI agent and get socket reference
+setBDIAgent(bdiAgent);
 setSocket(socket);
 
 
@@ -51,9 +61,15 @@ missionAdded.on("newMission", () => {optionsGeneration(bdiAgent);});
 //name: 'admin' id: 00a552
 socket.onMsg(async (id, name, msg) => {
     console.log(`Received message from ${name}:`, msg);
-    //if (name == 'admin') {
-    //    pushEvent('chatMsg', msg);
-    //}
+
+    if (isMaster) {
+        // Master only takes commands from the admin.
+        if (name !== 'admin') return;
+    } else {
+        // Slave only takes commands from the master agent.
+        if (id !== MASTER_ID) return;
+    }
+
     pushEvent('chatMsg', { id, name, msg });
 });
 
