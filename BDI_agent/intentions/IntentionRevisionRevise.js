@@ -15,28 +15,28 @@ export class IntentionRevisionRevise extends IntentionRevision {
 
     utility(predicate) {
         const [action, x, y, payload] = predicate;
+        const carrying = Array.from(parcels.values()).filter(p => p.carriedBy === me.id);
+        const totalReward = carrying.reduce((sum, p) => sum + p.reward, 0);
+        const nearestDeliveryFrom = (pos) =>
+            deliveryTiles.length ? Math.min(...deliveryTiles.map(t => distance(t, pos))) : Infinity;
+        const STEP_COST = 0.05;
 
-        // If she is carrying parcels worth 45 points and the nearest delivery is 5 steps away, deliver utility = 40. 
-        // If a nearby parcel has reward - distance = 8 - 2 = 6, delivering wins. 
-        // But if there's a parcel with reward - distance = 30 - 3 = 27, picking it up first wins instead.
         if (action === 'go_deliver') {
-            const carrying = Array.from(parcels.values()).filter(p => p.carriedBy === me.id);
             if (carrying.length === 0) return -1; // nothing to deliver
 
-            const totalReward = carrying.reduce((sum, p) => sum + p.reward, 0);
-            const nearestDelivery = Math.min(...deliveryTiles.map(t => distance(t, me)));
-
-            // Deliver score grows with reward and shrinks with distance
-            return totalReward - nearestDelivery;
+            const steps = nearestDeliveryFrom(me);
+            return totalReward - steps * STEP_COST * carrying.length;
         }
-        // Before we compared distance to parcel worth, but it doesnt correspond because then go pick up wins a lot of cases
+
         if (action === 'go_pick_up') {
             const parcel = parcels.get(payload);
             if (!parcel || parcel.carriedBy) return -1;
 
-            const STEP_COST = 0.05; // 1 pt/s decay × 0.05 s/tile = 0.05 pts per tile
-            return parcel.reward - distance({ x, y }, me) * STEP_COST;
+            // Route: me -> parcel -> nearest delivery. One extra parcel decays too.
+            const steps = distance({ x, y }, me) + nearestDeliveryFrom({ x, y });
+            return totalReward + parcel.reward - steps * STEP_COST * (carrying.length + 1);
         }
+
 
         // If no parcels are spawning at the spawn tile, then the agent should try a new one after a while
         if (action === 'go_spawn') return 1;
