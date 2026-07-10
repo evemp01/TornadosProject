@@ -4,10 +4,9 @@
 // choice on top of it.
 //
 // type is one of:
-//   'avoid_tile'      - never navigate to or through this tile
-// Future types (not implemented yet, kept in mind for the shape of this file):
-//   'no_pickup_at'    - never pick up a parcel sitting on this tile
-//   'no_deliver_at'   - never deliver at this tile
+//   'avoid_tile'        - never navigate to or through this tile
+//   'no_pickup_at'      - never pick up a parcel sitting on this tile
+//   'no_deliver_at'     - never deliver at this tile
 //   'prefer_deliver_at' - prefer delivering here over other delivery tiles
 export const constraints = [];
 
@@ -32,4 +31,29 @@ export function isTileAvoided(x, y) {
         Math.round(c.x) === Math.round(x) &&
         Math.round(c.y) === Math.round(y)
     );
+}
+
+export function isPickupBanned(x, y) {
+    return constraints.some(c =>
+        c.type === 'no_pickup_at' &&
+        Math.round(c.x) === Math.round(x) &&
+        Math.round(c.y) === Math.round(y)
+    );
+}
+
+export function isDeliveryBanned(x, y) {
+    return constraints.some(c =>
+        c.type === 'no_deliver_at' &&
+        Math.round(c.x) === Math.round(x) &&
+        Math.round(c.y) === Math.round(y)
+    );
+}
+
+// Only the most recently set preference is honored — setting a new one
+// supersedes the last, rather than accumulating a list of preferences.
+export function getPreferredDeliveryTile() {
+    for (let i = constraints.length - 1; i >= 0; i--) {
+        if (constraints[i].type === 'prefer_deliver_at') return constraints[i];
+    }
+    return null;
 }

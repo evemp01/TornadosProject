@@ -4,7 +4,7 @@ import { parcels } from "../beliefs/parcels.js";
 import { deliveryTiles } from "../beliefs/map.js";
 import { distance } from "../utils/distance.js";
 import { socket } from "../../main_BDI.js";
-import { isTileAvoided } from "../beliefs/constraints.js";
+import { isTileAvoided, isDeliveryBanned, getPreferredDeliveryTile } from "../beliefs/constraints.js";
 import { putdownWithRetry } from "../utils/socketManager.js";
 
 export class GoDeliver extends PlanBase {
@@ -21,16 +21,30 @@ export class GoDeliver extends PlanBase {
             throw ['nothing to deliver'];
         }
 
-        let nearest = Number.MAX_VALUE;
+        // A preferred delivery tile (e.g. "deliver at the leftmost tile") wins
+        // as long as it's still a real delivery tile and isn't avoided/banned.
         let target;
-        for (const tile of deliveryTiles) {
-            if (isTileAvoided(tile.x, tile.y)) continue;
-            const d = distance(tile, me);
-            if (d < nearest) {
-                nearest = d;
-                target = tile;
+        const preferred = getPreferredDeliveryTile();
+        if (preferred) {
+            const stillValid = deliveryTiles.some(t => t.x === preferred.x && t.y === preferred.y);
+            if (stillValid && !isTileAvoided(preferred.x, preferred.y) && !isDeliveryBanned(preferred.x, preferred.y)) {
+                target = { x: preferred.x, y: preferred.y };
             }
         }
+
+        // Otherwise find the nearest delivery tile that isn't avoided or banned
+        if (!target) {
+            let nearest = Number.MAX_VALUE;
+            for (const tile of deliveryTiles) {
+                if (isTileAvoided(tile.x, tile.y) || isDeliveryBanned(tile.x, tile.y)) continue;
+                const d = distance(tile, me);
+                if (d < nearest) {
+                    nearest = d;
+                    target = tile;
+                }
+            }
+        }
+
         if (!target) {
             console.log('[GoDeliver] no delivery tile found, throwing');
             throw ['no delivery tile found'];

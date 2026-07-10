@@ -3,7 +3,7 @@ import { me } from "../beliefs/me.js";
 import { distance } from "../utils/distance.js";
 import { deliveryTiles, spawnTiles } from "../beliefs/map.js";
 import { missions } from "../beliefs/missions.js";
-import { isTileAvoided } from "../beliefs/constraints.js";
+import { isTileAvoided, isPickupBanned } from "../beliefs/constraints.js";
 
 const MAX_CARRY = 5;
 
@@ -14,11 +14,11 @@ export function optionsGeneration(myAgent) {
     if (carrying.length > 0)
         myAgent.push(['go_deliver']);
 
-    // Push go_pick_up for all visible parcels not sitting on an avoided (and
-    // therefore unreachable) tile, unless we're already carrying the max
+    // Push go_pick_up for all visible parcels not sitting on an avoided
+    // (therefore unreachable) or pickup-banned tile, unless already at max
     if (carrying.length < MAX_CARRY)
         for (const parcel of parcels.values())
-            if (!parcel.carriedBy && !isTileAvoided(parcel.x, parcel.y))
+            if (!parcel.carriedBy && !isTileAvoided(parcel.x, parcel.y) && !isPickupBanned(parcel.x, parcel.y))
                 myAgent.push(['go_pick_up', parcel.x, parcel.y, parcel.id]);
 
     // Push fallbacks

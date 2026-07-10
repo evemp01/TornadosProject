@@ -5,6 +5,7 @@ import { me } from "../beliefs/me.js";
 import { distance } from "../utils/distance.js";
 import { deliveryTiles } from "../beliefs/map.js";
 import { agents } from "../beliefs/agents.js";
+import { isTileAvoided, isPickupBanned } from "../beliefs/constraints.js";
 
 export class IntentionRevisionRevise extends IntentionRevision {
 
@@ -50,13 +51,18 @@ export class IntentionRevisionRevise extends IntentionRevision {
     }
 
     async push(predicate) {
-        // console.log('Revising intention queue. Received', ...predicate);
-
-        // Remove invalid intentions (parcels already taken)
+        // Remove invalid intentions: parcel already delivered/removed, already
+        // carried (by anyone, including a duplicate queued entry for the same
+        // parcel that already succeeded), or its tile since avoided/banned.
         for (const i of this.intention_queue) {
             if (i.predicate[0] === 'go_pick_up') {
                 const parcel = parcels.get(i.predicate[3]);
-                if (parcel && parcel.carriedBy && parcel.carriedBy !== me.id) {
+                if (!parcel || parcel.carriedBy) {
+                    i.stop();
+                    continue;
+                }
+                const [, x, y] = i.predicate;
+                if (isTileAvoided(x, y) || isPickupBanned(x, y)) {
                     i.stop();
                 }
             }
@@ -78,7 +84,7 @@ export class IntentionRevisionRevise extends IntentionRevision {
         // If the new intention is now the best, stop the currently running one (index 1 after sort)
         const best = this.intention_queue[0];
         if (best.predicate.join(' ') !== predicate.join(' ')) return;
-        
+
         const PREEMPT_THRESHOLD = 5; // utility difference threshold for preemption
         if (this.utility(best.predicate) - this.utility(running.predicate) >= PREEMPT_THRESHOLD) {
             running.stop();

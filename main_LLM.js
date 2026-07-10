@@ -6,6 +6,7 @@ import { missionAdded } from "./BDI_agent/utils/events.js";
 import { me } from "./BDI_agent/beliefs/me.js";
 import { sendMessageToSocket } from "./BDI_agent/utils/socketManager.js";
 import { addConstraint } from "./BDI_agent/beliefs/constraints.js";
+import { deliveryTiles } from "./BDI_agent/beliefs/map.js";
 
 //kode inspired form 09_08B-planner-execution-loop_DeliverooJS_EXTRA.js i think
 
@@ -171,14 +172,79 @@ async function answereInChat(actionInput) {
   return 'Message sent to chat';
 }
 
-/*async function deliverAt() {
-  return 
+async function noPickupAt(actionInput) {
+  let params;
+
+  try {
+    params = typeof actionInput === "string" ? JSON.parse(actionInput) : actionInput;
+  } catch (error) {
+    return `Error parsing no_pickup_at input: ${error.message}`;
+  }
+
+  const { x, y } = params;
+
+  if (typeof x !== "number" || typeof y !== "number") {
+    return "Error: x and y must be numbers.";
+  }
+
+  addConstraint('no_pickup_at', { x, y });
+
+  commandExecuted = true;
+
+  return `The agent will no longer pick up parcels at (${x}, ${y}).`;
 }
 
-async function doNotDeliverAt() {
-  return 
+async function noDeliverAt(actionInput) {
+  let params;
+
+  try {
+    params = typeof actionInput === "string" ? JSON.parse(actionInput) : actionInput;
+  } catch (error) {
+    return `Error parsing no_deliver_at input: ${error.message}`;
+  }
+
+  const { x, y } = params;
+
+  if (typeof x !== "number" || typeof y !== "number") {
+    return "Error: x and y must be numbers.";
+  }
+
+  addConstraint('no_deliver_at', { x, y });
+
+  commandExecuted = true;
+
+  return `The agent will no longer deliver at (${x}, ${y}).`;
 }
-*/
+
+async function deliverAt(actionInput) {
+  let params;
+
+  try {
+    params = typeof actionInput === "string" ? JSON.parse(actionInput) : actionInput;
+  } catch (error) {
+    return `Error parsing deliver_at input: ${error.message}`;
+  }
+
+  const { location } = params;
+
+  if (location !== "leftmost" && location !== "rightmost") {
+    return "Error: location must be 'leftmost' or 'rightmost'.";
+  }
+
+  if (deliveryTiles.length === 0) {
+    return "Error: delivery tiles are not known yet.";
+  }
+
+  const tile = location === "leftmost"
+    ? deliveryTiles.reduce((a, b) => (b.x < a.x ? b : a))
+    : deliveryTiles.reduce((a, b) => (b.x > a.x ? b : a));
+
+  addConstraint('prefer_deliver_at', { x: tile.x, y: tile.y });
+
+  commandExecuted = true;
+
+  return `Deliveries will now prefer the ${location} delivery tile, at (${tile.x}, ${tile.y}).`;
+}
 
 //tool-name, java function
 const TOOLS = {
@@ -187,9 +253,10 @@ const TOOLS = {
   get_my_position: getMyPosition,
   LLM_add_mission: LLMaddMission,
   avoid_tile: avoidTile,
+  no_pickup_at: noPickupAt,
+  no_deliver_at: noDeliverAt,
+  deliver_at: deliverAt,
   answere_in_chat: answereInChat,
-  //deliver_at: deliverAt,
-  //do_not_deliver_at: doNotDeliverAt
 };
 
 // ==========================================
@@ -212,15 +279,19 @@ async function callModel(messages, { temperature = 0 } = {}) {
 
 function extractAction(text) {
   const actionMatch = text.match(/^Action:\s*(.+)$/im);
-  const actionInputMatch = text.match(/^Action Input:\s*(.+)$/im);
 
-  if (!actionMatch || !actionInputMatch) {
+  if (!actionMatch) {
     return null;
   }
 
+  // A missing "Action Input:" line is tolerated (defaults to empty) rather
+  // than failing the whole parse — this matters for zero-argument tools
+  // like get_my_position, where the model sometimes omits the line entirely.
+  const actionInputMatch = text.match(/^Action Input:\s*(.+)$/im);
+
   return {
     action: actionMatch[1].trim(),
-    actionInput: actionInputMatch[1].trim(),
+    actionInput: actionInputMatch ? actionInputMatch[1].trim() : "",
   };
 }
 
@@ -259,6 +330,9 @@ TOOLS
 - get_my_position(): returns the agent's current x, y coordinates and score. Action Input: none.
 - LLM_add_mission(type, params, reward): adds a new "go_to_mission" errand (move the agent to a specified location) to the BDI agent's task list.
 - avoid_tile(x, y): marks a tile the agent must never navigate to or through.
+- no_pickup_at(x, y): marks a tile where the agent must never pick up a parcel (it may still pass through or deliver there).
+- no_deliver_at(x, y): marks a tile where the agent must never deliver (it may still pass through or pick up there).
+- deliver_at(location): sets a preferred delivery tile by relative position — location is "leftmost" or "rightmost".
 - answere_in_chat(type, message): sends a reply directly to the user who triggered the request, instead of (or in addition to) a Final Answer.
 
 ===========================================================
@@ -300,6 +374,9 @@ WHEN TO USE EACH TOOL
 - Agent's position requested → call get_my_position. If the user asked for the position after moving, call it again once the movement is done.
 - Movement requested ("go to X,Y") → call LLM_add_mission with type 'go_to_mission'.
 - Avoidance requested ("do not go to X,Y", "avoid tile X,Y", or "going to X,Y gives/costs -500 points") → call avoid_tile, not LLM_add_mission. A stated penalty for a location is a request to avoid it, not a mission with a negative reward.
+- "do not pick up at X,Y" / "do not take parcels from X,Y" → call no_pickup_at. This is narrower than avoid_tile: the agent may still travel through or deliver at that tile, it just won't pick parcels up there.
+- "do not give/deliver/drop a parcel at X,Y" → call no_deliver_at. This is narrower than avoid_tile: the agent may still travel through or pick up at that tile, it just won't deliver there.
+- "drop/deliver a parcel at the leftmost/rightmost tile" → call deliver_at with that relative location.
 - Sending a reply to the game chat → call answere_in_chat.
 
 ===========================================================
@@ -314,11 +391,17 @@ LLM_add_mission
 - Action Input MUST be valid JSON, e.g.: {"type":"go_to_mission","params":{"x":1,"y":5},"reward":2000}
 
 ===========================================================
-avoid_tile
+avoid_tile / no_pickup_at / no_deliver_at
 ===========================================================
 - Action Input MUST be valid JSON: {"x":5,"y":5}
-- This is a command, not a question: first call it as an Action and wait for its Observation. Only give the Final Answer confirming the tile is avoided in a later turn, after you have seen that Observation. Never state a tile is avoided before you have actually called avoid_tile and received its result.
+- These are commands, not questions: first call the tool as an Action and wait for its Observation. Only give the Final Answer confirming what changed in a later turn, after you have seen that Observation. Never state a tile has been marked/restricted before you have actually called the tool and received its result.
 
+===========================================================
+deliver_at
+===========================================================
+- Action Input MUST be valid JSON: {"location":"leftmost"} or {"location":"rightmost"}
+- location must be exactly "leftmost" or "rightmost" — no other values.
+- This is a command, not a question: call it as an Action, wait for its Observation, and only then give a Final Answer confirming the preferred delivery tile.
 ===========================================================
 answere_in_chat
 ===========================================================

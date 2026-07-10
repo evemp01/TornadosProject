@@ -37,17 +37,3 @@ export function createBDI() {
 }
 
 //createBDI();
-
-
-/*
-setInterval(() => {
-    console.log("\n AGENT STATE");
-    console.log("ME:", me);
-    console.log("PARCELS:", parcels.size);
-    console.log("AGENTS:", agents.size);
-    console.log(
-        "LIST:",
-        Array.from(parcels.values()).map(p => `${p.id}@(${p.x},${p.y})`)
-    );
-}, 1000);
-*/

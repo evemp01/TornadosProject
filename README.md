@@ -158,14 +158,11 @@ exs: TOKLEN= ffirvbfukdhvbjhfsduilh node file.js
 OBS: bare følg instruksjoner for en viss agent
 
 TODO level 1:
-- mission: drop a package at leftmost tile
-- add: do not go to
-- do not give parcel at ...
-
+- lag et tydelig poengsystem som fungerer så den ender opp med å levere pakker og kan adde poeng som i level 2
+- comunication between agents
 
 TODO level 2:
 - LLM endrer reward / endrer map
-exs: every time deliver here you get 0 points 
 exs: everytime you go through this point you ...¨
 exs: deliver exactly 3 parcel at a time to ...
 - deliver parcels with score less than ..
@@ -177,3 +174,18 @@ Legge til at to snakker med hverandre:
 - så velger den tolek osv ut fra der
 - ? men da må vi fikse litt på socket plassering og kanskje gjøre slik at ingen importerer socket fra main
 
+
+
+TEST:
+1. what are your current coordinates and score?
+2. go to 10,17
+3. do not go to 7,7
+4. do not pick up parcels from 9,9
+5. if you pick up from 9,18 you get 0 points
+6. do not deliver at 10,10
+7. going to 7,20 costs -500 points
+8. deliver parcels at the leftmost tile
+9. what is 17 times 23?
+10. deliver parcels at the rightmost tile
+11. do not go to 11,9
+12. what are your current coordinates and score?
